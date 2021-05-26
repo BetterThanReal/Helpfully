@@ -1,0 +1,6 @@
+[package]
+name = "betterthanreal/helpfully"
+author = "Better Than Real"
+license = "MIT"
+content_root = "src/Helpfully"
+version = "1.0.0"

@@ -1,0 +1,225 @@
+return function()
+  local functions = require(script.Parent.functions)
+  local bind = functions.bind
+  local bindDrop = functions.bindDrop
+  local bindKeep = functions.bindKeep
+  local noOp = functions.noOp
+
+  local function typestr(...)
+    local args = table.pack(...)
+    local _types = {}
+    for i, k in ipairs(args) do
+      _types[i] = type(k)
+    end
+    return "[" .. table.concat(_types, ":") .. "]"
+  end
+
+  local function vals(...)
+    return ...
+  end
+
+  local function valstr(...)
+    local args = table.pack(...)
+    return "[" .. table.concat(args, ":") .. "]"
+  end
+
+  describe("bind", function()
+    describe("errors", function()
+      it("should error when #args == 0", function()
+        expect(function()
+          bind()
+        end).to.throw("Invalid argument")
+      end)
+      it("should error when args[1] ~= function", function()
+        expect(function()
+          bind("invalid")
+        end).to.throw("Invalid argument")
+      end)
+    end)
+    describe("success", function()
+      describe("function return value", function()
+        it("should return bound args[1] when #args == 1", function()
+          expect(
+            bind(valstr)
+          ).to.equal(valstr)
+        end)
+        it("should return bound args[1] when #args == 2", function()
+          expect(
+            bind(valstr, 1)()
+          ).to.equal("[1]")
+        end)
+        it("should return bound args[1] when #args == 3", function()
+          expect(
+            bind(valstr, 1, 2)()
+          ).to.equal("[1:2]")
+        end)
+        it("should return bound args[1] when #args == 4", function()
+          expect(
+            bind(valstr, 1, 2, 3)()
+          ).to.equal("[1:2:3]")
+        end)
+        it("should return bound args[1] when #args == 5", function()
+          expect(
+            bind(valstr, 1, 2, 3, 4)()
+          ).to.equal("[1:2:3:4]")
+        end)
+        it("should return bound args[1] when #args == 9", function()
+          expect(
+            bind(valstr, 1, 2, 3, 4, 5, 6, 7, 8)()
+          ).to.equal("[1:2:3:4:5:6:7:8]")
+        end)
+        it("should return bound args[1] when #args == 1 and ()#args == 2", function()
+          expect(
+            bind(valstr)(9, 10)
+          ).to.equal("[9:10]")
+        end)
+        it("should return bound args[1] when #args == 2 and ()#args == 2", function()
+          expect(
+            bind(valstr, 1)(9, 10)
+          ).to.equal("[1:9:10]")
+        end)
+        it("should return bound args[1] when #args == 3 and ()#args == 2", function()
+          expect(
+            bind(valstr, 1, 2)(9, 10)
+          ).to.equal("[1:2:9:10]")
+        end)
+        it("should return bound args[1] when #args == 4 and ()#args == 2", function()
+          expect(
+            bind(valstr, 1, 2, 3)(9, 10)
+          ).to.equal("[1:2:3:9:10]")
+        end)
+        it("should return bound args[1] when #args == 5 and ()#args == 2", function()
+          expect(
+            bind(valstr, 1, 2, 3, 4)(9, 10)
+          ).to.equal("[1:2:3:4:9:10]")
+        end)
+        it("should return bound args[1] when #args == 9 and ()#args == 2", function()
+          expect(
+            bind(valstr, 1, 2, 3, 4, 5, 6, 7, 8)(9, 10)
+          ).to.equal("[1:2:3:4:5:6:7:8:9:10]")
+        end)
+      end)
+    end)
+  end)
+  describe("bindDrop", function()
+    describe("errors", function()
+      it("should error when #args == 0", function()
+        expect(function()
+          bindDrop()
+        end).to.throw("Invalid argument")
+      end)
+      it("should error when args[1] ~= number", function()
+        expect(function()
+          bindDrop("invalid")
+        end).to.throw("Invalid argument")
+      end)
+      it("should error when args[1] < 0", function()
+        expect(function()
+          bindDrop(-1)
+        end).to.throw("Invalid argument")
+      end)
+      it("should error when args[2] ~= function", function()
+        expect(function()
+          bindDrop("invalid")
+        end).to.throw("Invalid argument")
+      end)
+    end)
+    describe("success", function()
+      describe("function return value", function()
+        it("should return bound args[2] when args[1] == 0", function()
+          expect(
+            bindDrop(0, vals)
+          ).to.equal(bind(vals))
+        end)
+        it("should return bound args[2] that discards 0 values when args[1] == 0 and #args == 6 and ()#args == 2", function()
+          expect(
+            valstr(bindDrop(0, vals, 1, 2, 3, 4)(5, 6))
+          ).to.equal("[1:2:3:4:5:6]")
+        end)
+        it("should return bound args[2] that discards 0 values when args[1] == 0 and #args == 7 and ()#args == 2", function()
+          expect(
+            valstr(bindDrop(0, vals, 1, 2, 3, 4, 5)(6, 7))
+          ).to.equal("[1:2:3:4:5:6:7]")
+        end)
+        it("should return bound args[2] that discards 2 values when args[1] == 0 and #args == 6 and ()#args == 2", function()
+          expect(
+            valstr(bindDrop(2, vals, 1, 2, 3, 4)(5, 6))
+          ).to.equal("[3:4:5:6]")
+        end)
+        it("should return bound args[2] that discards 2 values when args[1] == 0 and #args == 7 and ()#args == 2", function()
+          expect(
+            valstr(bindDrop(2, vals, 1, 2, 3, 4, 5)(6, 7))
+          ).to.equal("[3:4:5:6:7]")
+        end)
+        it("should return bound args[2] that discards all values when args[1] == 7 and #args == 7 and ()#args == 2", function()
+          expect(
+            valstr(bindDrop(7, vals, 1, 2, 3, 4, 5)(6, 7))
+          ).to.equal("[]")
+        end)
+        it("should return bound args[2] that discards all values when args[1] == 8 and #args == 7 and ()#args == 2", function()
+          expect(
+            valstr(bindDrop(8, vals, 1, 2, 3, 4, 5)(6, 7))
+          ).to.equal("[]")
+        end)
+      end)
+    end)
+  end)
+  describe("bindKeep", function()
+    describe("errors", function()
+      it("should error when #args == 0", function()
+        expect(function()
+          bindKeep()
+        end).to.throw("Invalid argument")
+      end)
+      it("should error when args[1] ~= number", function()
+        expect(function()
+          bindKeep("invalid")
+        end).to.throw("Invalid argument")
+      end)
+      it("should error when args[2] ~= function", function()
+        expect(function()
+          bindKeep("invalid")
+        end).to.throw("Invalid argument")
+      end)
+    end)
+    describe("success", function()
+      describe("function return value", function()
+        it("should return bound args[2] that keeps no values when args[1] == 0 and #args == 6 and ()#args == 2", function()
+          expect(
+            valstr(bindKeep(0, vals, 1, 2, 3, 4)(5, 6))
+          ).to.equal("[]")
+        end)
+        it("should return bound args[2] that keeps 1 value when args[1] == 1 and #args == 7 and ()#args == 2", function()
+          expect(
+            valstr(bindKeep(1, vals, 1, 2, 3, 4, 5)(6, 7))
+          ).to.equal("[1]")
+        end)
+        it("should return bound args[2] that keeps the last value when args[1] == -1 and #args == 7 and ()#args == 2", function()
+          expect(
+            valstr(bindKeep(-1, vals, 1, 2, 3, 4, 5)(6, 7))
+          ).to.equal("[7]")
+        end)
+        it("should return bound args[2] that keeps 2 values when args[1] == 2 and #args == 6 and ()#args == 2", function()
+          expect(
+            valstr(bindKeep(2, vals, 1, 2, 3, 4)(5, 6))
+          ).to.equal("[1:2]")
+        end)
+        it("should return bound args[2] that keeps all values when args[1] == 100 and #args == 7 and ()#args == 2", function()
+          expect(
+            valstr(bindKeep(100, vals, 1, 2, 3, 4, 5)(6, 7))
+          ).to.equal("[1:2:3:4:5:6:7]")
+        end)
+        it("should return bound args[2] that keeps the last 4 values when args[1] == -4 and #args == 6 and ()#args == 2", function()
+          expect(
+            valstr(bindKeep(-4, vals, 1, 2, 3, 4)(5, 6))
+          ).to.equal("[3:4:5:6]")
+        end)
+        it("should return bound args[2] that keeps all values when args[1] == -100 and #args == 7 and ()#args == 2", function()
+          expect(
+            valstr(bindKeep(-100, vals, 1, 2, 3, 4, 5)(6, 7))
+          ).to.equal("[1:2:3:4:5:6:7]")
+        end)
+      end)
+    end)
+  end)
+end

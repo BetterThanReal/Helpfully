@@ -1,0 +1,708 @@
+<roblox version="4">
+  <Item class="DataModel" referent="0">
+    <Properties>
+      <string name="Name">Helfpully</string>
+    </Properties>
+    <Item class="Lighting" referent="1">
+      <Properties>
+        <string name="Name">Lighting</string>
+        <Color3 name="Ambient">
+          <R>0</R>
+          <G>0</G>
+          <B>0</B>
+        </Color3>
+        <float name="Brightness">2</float>
+        <bool name="GlobalShadows">true</bool>
+        <bool name="Outlines">false</bool>
+        <token name="Technology">1</token>
+      </Properties>
+    </Item>
+    <Item class="ReplicatedStorage" referent="2">
+      <Properties>
+        <string name="Name">ReplicatedStorage</string>
+      </Properties>
+      <Item class="Folder" referent="3">
+        <Properties>
+          <string name="Name">Scripts</string>
+        </Properties>
+        <Item class="Folder" referent="4">
+          <Properties>
+            <string name="Name">Helpfully</string>
+          </Properties>
+          <Item class="ModuleScript" referent="5">
+            <Properties>
+              <string name="Name">Logger</string>
+              <string name="Source">local bind = require(script.Parent.functions).bind
+local getRefLabel = require(script.Parent.debug).getRefLabel
+
+local LOG_LEVEL = {
+  NONE = 100,
+  FATAL = 95,
+  CRITICAL = 85,
+  ERROR = 75,
+  WARN = 65,
+  INFO = 50,
+  VERBOSE = 35,
+  DEBUG = 20,
+  ALL = 0,
+}
+
+local PREFIX = {
+  [LOG_LEVEL.NONE] = 'NONE',
+  [LOG_LEVEL.FATAL] = 'FATAL',
+  [LOG_LEVEL.CRITICAL] = 'CRITICAL',
+  [LOG_LEVEL.ERROR] = 'ERROR',
+  [LOG_LEVEL.WARN] = 'WARN',
+  [LOG_LEVEL.INFO] = 'INFO',
+  [LOG_LEVEL.VERBOSE] = 'VERBOSE',
+  [LOG_LEVEL.DEBUG] = 'DEBUG',
+  [LOG_LEVEL.ALL] = 'ALL',
+}
+
+local function getLogLevel(level)
+  if level == nil then
+    return LOG_LEVEL.ALL
+  end
+
+  if type(level) == 'number' then
+    return level
+  end
+
+  if type(level) == 'string' then
+    return LOG_LEVEL[string.upper(level)]
+  end
+
+  return nil
+end
+
+local function getLogPrefix(name, msgLevel)
+  local prefix = PREFIX[msgLevel]
+  local prefix = prefix and ("[%s] "):format(prefix) or ''
+  name = name and ("{%s}: "):format(name) or ''
+
+  return prefix .. name
+end
+
+local function noOp() end
+
+local function onLogError(logLevel, name, message)
+  error(string.format("%s%s", name or '', message or ''))
+end
+
+local function onLogPrint(logLevel, name, message)
+  print(string.format("%s%s", name or '', message or ''))
+end
+
+local function onLogWarn(logLevel, name, message)
+  warn(string.format("%s%s", name or '', message or ''))
+end
+
+local function create(config)
+  local _ = config or (config == nil and {})
+
+  if type(_) ~= 'table' then
+    error((
+      "Invalid argument #1 to Logger.create " ..
+      "(table expected, received %s)"):format(getRefLabel(_)), 2)
+  end
+
+  local name = _.name
+
+  if name ~= nil and type(name) ~= 'string' then
+    error((
+      "Invalid property 'name' in argument #1 to Logger.create " ..
+      "(string expected, received %s)"):format(getRefLabel(name)), 2)
+  end
+
+  local level = getLogLevel(_.level)
+
+  if level == nil then
+    error((
+      "Invalid property 'level' in argument #1 to Logger.create " ..
+      "(number or log-level name expected, received %s)"
+      ):format(getRefLabel(_.level)), 2)
+  end
+
+  local onLogFn = _.onLogFn
+
+  if onLogFn ~= nil and type(onLogFn) ~= 'function' then
+    error((
+      "Invalid property 'onLogFn' in argument #1 to Logger.create " ..
+      "(function expected, received %s)"):format(getRefLabel(onLogFn)), 2)
+  end
+
+  local module = {
+    critical = LOG_LEVEL.CRITICAL &lt; level and noOp or
+      bind(onLogFn or onLogError, LOG_LEVEL.CRITICAL,
+        not onLogFn and getLogPrefix(name, LOG_LEVEL.CRITICAL) or name),
+
+    debug = LOG_LEVEL.DEBUG &lt; level and noOp or
+      bind(nLogFn or onLogPrint, LOG_LEVEL.DEBUG,
+        not onLogFn and getLogPrefix(name, LOG_LEVEL.DEBUG) or name),
+
+    error = LOG_LEVEL.ERROR &lt; level and noOp or
+      bind(onLogFn or onLogError, LOG_LEVEL.ERROR,
+        not onLogFn and getLogPrefix(name, LOG_LEVEL.ERROR) or name),
+
+    fatal = LOG_LEVEL.FATAL &lt; level and noOp or
+      bind(onLogFn or onLogError, LOG_LEVEL.FATAL,
+        not onLogFn and getLogPrefix(name, LOG_LEVEL.FATAL) or name),
+
+    info = LOG_LEVEL.INFO &lt; level and noOp or
+      bind(onLogFn or onLogPrint, LOG_LEVEL.INFO,
+        not onLogFn and getLogPrefix(name, LOG_LEVEL.INFO) or name),
+
+    verbose = LOG_LEVEL.VERBOSE &lt; level and noOp or
+      bind(onLogFn or onLogPrint, LOG_LEVEL.VERBOSE,
+        not onLogFn and getLogPrefix(name, LOG_LEVEL.VERBOSE) or name),
+
+    warn = LOG_LEVEL.WARN &lt; level and noOp or
+      bind(onLogFn or onLogWarn, LOG_LEVEL.WARN,
+        not onLogFn and getLogPrefix(name, LOG_LEVEL.WARN) or name),
+
+    LOG_LEVEL = LOG_LEVEL,
+  }
+
+  setmetatable(module, { __call = function(table, _) return create(_) end })
+  return module
+end
+
+return create()</string>
+            </Properties>
+          </Item>
+          <Item class="ModuleScript" referent="6">
+            <Properties>
+              <string name="Name">debug</string>
+              <string name="Source">local function getRefLabel(ref)
+  local t = typeof(ref)
+
+  if t == 'Instance' then
+    local cn = type(ref.ClassName) == 'string' and
+      ref.ClassName ~= '' and ref.ClassName
+
+    local n = type(ref.name) == 'string' and
+      ref.name ~= '' and ref.name
+
+    return ("&lt;%s>%s"):format(
+      cn or 'Instance', n and (' "%s"'):format(n) or '')
+  else
+    if t == 'string' then
+      return '"' .. ref .. '"'
+    elseif t == 'boolean' or t == 'number' or ref == nil then
+      return tostring(ref)
+    else
+      return '&lt;' .. t .. '>'
+    end
+  end
+end
+
+local function trimErrMsgLineNum(message)
+  if type(message) ~= 'string' then
+    return message
+  end
+  return ((message):gsub('^[^:]+:[0-9]+: ', '', 1))
+end
+
+return {
+  getRefLabel = getRefLabel,
+  trimErrMsgLineNum = trimErrMsgLineNum,
+}</string>
+            </Properties>
+          </Item>
+          <Item class="ModuleScript" referent="7">
+            <Properties>
+              <string name="Name">functions</string>
+              <string name="Source">local getRefLabel = require(script.Parent.debug).getRefLabel
+
+local function bind(fn, ...)
+  if type(fn) ~= 'function' then
+    error((
+      "Invalid argument #1 to functions.bind " ..
+      "(function expected, received %s)"):format(getRefLabel(fn)), 1)
+  end
+
+  local bound = table.pack(...)
+  local boundCount = bound.n
+
+  -- performance optimization for common bind scenarios
+  if boundCount == 0 then
+    return fn
+  elseif boundCount == 1 then
+    return function(...)
+      return fn(bound[1], ...)
+    end
+  elseif boundCount == 2 then
+    return function(...)
+      return fn(bound[1], bound[2], ...)
+    end
+  elseif boundCount == 3 then
+    return function(...)
+      return fn(bound[1], bound[2], bound[3], ...)
+    end
+  elseif boundCount == 4 then
+    return function(...)
+      return fn(bound[1], bound[2], bound[3], bound[4], ...)
+    end
+  end
+
+  -- general case which requires table concatenation for
+  -- each invocation of the bound function.
+  return function(...)
+    local fnArgs = {}
+    table.move(bound, 1, boundCount, 1, fnArgs)
+    local args = table.pack(...)
+    table.move(args, 1, #args, boundCount + 1, fnArgs)
+    return fn(table.unpack(fnArgs, 1, fnArgs.n))
+  end
+end
+
+local function listKeep(n, ...)
+  local values = table.pack(...)
+  local valuesN = values.n
+
+  if n >= valuesN or -(n) >= valuesN then
+    return ...
+  elseif n &lt; 0 then
+    n = n + valuesN
+    if n &lt; 0 then
+      n = 0
+    end
+    return table.unpack(values, n + 1, valuesN)
+  end
+
+  return table.unpack(values, 1, n)
+end
+
+local function listDrop(n, ...)
+  local values = table.pack(...)
+  local valuesN = values.n
+
+  if n >= valuesN then
+    return
+  end
+
+  return table.unpack(values, n + 1, valuesN)
+end
+
+local function bindWithModify(nFn, n, fn, ...)
+  local bound = table.pack(...)
+  local boundCount = bound.n
+
+  -- performance optimization for common bind scenarios
+  if boundCount == 0 then
+    return function(...)
+      return nFn(n, fn(...))
+    end
+  elseif boundCount == 1 then
+    return function(...)
+      return nFn(n, fn(bound[1], ...))
+    end
+  elseif boundCount == 2 then
+    return function(...)
+      return nFn(n, fn(bound[1], bound[2], ...))
+    end
+  elseif boundCount == 3 then
+    return function(...)
+      return nFn(n, fn(bound[1], bound[2], bound[3], ...))
+    end
+  elseif boundCount == 4 then
+    return function(...)
+      return nFn(n, fn(bound[1], bound[2], bound[3], bound[4], ...))
+    end
+  end
+
+  -- general case which requires table concatenation for
+  -- each invocation of the bound function.
+  return function(...)
+    local fnArgs = {}
+    table.move(bound, 1, boundCount, 1, fnArgs)
+    local args = table.pack(...)
+    table.move(args, 1, #args, boundCount + 1, fnArgs)
+    return nFn(n, fn(table.unpack(fnArgs, 1, fnArgs.n)))
+  end
+end
+
+local function bindDrop(n, fn, ...)
+  if type(n) ~= 'number' then
+    error((
+      "Invalid argument #1 to functions.bindDrop " ..
+      "(number expected, received %s)"):format(getRefLabel(n)), 1)
+  end
+
+  if n &lt; 0 then
+    error((
+      "Invalid argument #1 to functions.bindDrop " ..
+      "(non-negative number expected, received %s)"):format(n), 1)
+  end
+
+  if type(fn) ~= 'function' then
+    error((
+      "Invalid argument #2 to functions.bindDrop " ..
+      "(function expected, received %s)"):format(getRefLabel(fn)), 1)
+  end
+
+  if n == 0 then
+    return bind(fn, ...)
+  end
+
+  return bindWithModify(listDrop, n, fn, ...)
+end
+
+local function bindKeep(n, fn, ...)
+  if type(n) ~= 'number' then
+    error((
+      "Invalid argument #1 to functions.bindKeep " ..
+      "(number expected, received %s)"):format(getRefLabel(n)), 1)
+  end
+
+  if type(fn) ~= 'function' then
+    error((
+      "Invalid argument #2 to functions.bindKeep " ..
+      "(function expected, received %s)"):format(getRefLabel(fn)), 1)
+  end
+
+  if n == 0 then
+    local bound = bind(fn, ...)
+    return function()
+      bound()
+    end
+  end
+
+  return bindWithModify(listKeep, n, fn, ...)
+end
+
+local function noOp() end
+
+return {
+  bind = bind,
+  bindDrop = bindDrop,
+  bindKeep = bindKeep,
+  noOp = noOp,
+}</string>
+            </Properties>
+          </Item>
+          <Item class="ModuleScript" referent="8">
+            <Properties>
+              <string name="Name">paths</string>
+              <string name="Source">local debug = require(script.Parent.debug)
+local getRefLabel = debug.getRefLabel
+local trimErrMsgLineNum = debug.trimErrMsgLineNum
+
+local function _separatedPath(path, separator)
+  if path == nil then
+    return {}
+  end
+
+  if separator == nil then
+    separator = '.'
+  end
+
+  local _path = path
+  local hasPercent = false
+
+  if separator ~= '%' and (path):find('%%') then
+    _path = (path)
+      :gsub('%%%%', '\bp'):gsub('%%%' .. separator, '\bs')
+      :gsub('\bp', '%%'):gsub('%%(.)', '%1')
+    hasPercent = true
+  end
+
+  local paths = (_path):split(separator)
+  local _paths = {}
+
+  for i, subpath in pairs(paths) do
+    if subpath ~= '' then
+      if hasPercent then
+        subpath = (subpath):gsub('\bs', separator)
+      end
+      _paths[#_paths + 1] = subpath
+    end
+  end
+
+  return _paths
+end
+
+local function separatedPath(path, separator)
+  if path ~= nil then
+    if type(path) ~= 'string' then
+      error((
+        "Invalid argument #1 to paths.separatedPath " ..
+        "(string expected, received %s)"):format(getRefLabel(path)), 2)
+    end
+
+    if path:find('\b') then
+      error((
+        "Invalid argument #1 to paths.separatedPath " ..
+        "(string must not contain '\\b' (bell character), received '%s')"
+        ):format(path), 2)
+    end
+  end
+
+  if separator ~= nil then
+    if type(separator) ~= 'string' then
+      error((
+        "Invalid argument #2 to paths.separatedPath " ..
+        "(string expected, received %s)"):format(getRefLabel(separator)), 2)
+    end
+
+    if #separator ~= 1 then
+      error((
+        "Invalid argument #2 to paths.separatedPath " ..
+        "(single-character string expected, received '%s')"
+        ):format(separator), 2)
+    end
+
+    if separator == '\b' then
+      error((
+        "Invalid argument #2 to paths.separatedPath " ..
+        "(string must not contain '\\b' (bell character), received '%s')"
+        ):format(separator), 2)
+    end
+  end
+
+  return _separatedPath(path, separator)
+end
+
+local function _findByPath(path, separator)
+  if (path or '') == '' then
+    return nil, nil
+  end
+
+  local subpaths = _separatedPath(path, separator)
+
+  if #subpaths == 0 then
+    return nil, nil
+  end
+
+  local serviceName = subpaths[1]:sub(2)
+
+  local instance = nil
+  status, instance = pcall(
+    function() return game:GetService(serviceName) end)
+
+  if typeof(instance) ~= 'Instance' then
+    return nil, serviceName
+  end
+
+  for i = 2, #subpaths do
+    local subpath = subpaths[i]
+    instance = instance:FindFirstChild(subpath, false)
+
+    if typeof(instance) ~= 'Instance' then
+      return nil, subpath
+    end
+  end
+  return instance
+end
+
+local function findByPath(path, separator)
+  if path ~= nil then
+    if type(path) ~= 'string' then
+      error((
+        "Invalid argument #1 to paths.findByPath " ..
+        "(string expected, received %s)"):format(getRefLabel(path)), 2)
+    end
+
+    if not(
+      path:sub(1, 1) == ':' or
+      (path:sub(1, 2) == '%:' and separator ~= '%')) then
+
+      error((
+        "Invalid argument #1 to paths.findByPath " ..
+        "(string must begin with a service name prefixed with ':', " ..
+        "received '%s')"):format(path), 2)
+    end
+
+    if path:find('\b') then
+      error((
+        "Invalid argument #1 to paths.findByPath " ..
+        "(string must not contain '\\b' (bell character), received '%s')"
+        ):format(path), 2)
+    end
+  end
+
+  if separator ~= nil then
+    if type(separator) ~= 'string' then
+      error((
+        "Invalid argument #2 to paths.findByPath " ..
+        "(string expected, received %s)"):format(getRefLabel(separator)), 2)
+    end
+
+    if #separator ~= 1 then
+      error((
+        "Invalid argument #2 to paths.findByPath " ..
+        "(single-character string expected, received '%s')"
+        ):format(separator), 2)
+    end
+
+    if separator == '\b' then
+      error((
+        "Invalid argument #2 to paths.findByPath " ..
+        "(string must not contain '\\b' (bell character), received '%s')"
+        ):format(separator), 2)
+    end
+  end
+
+  return _findByPath(path, separator)
+end
+
+local function _findChildByPath(instance, path, separator)
+  if path == nil then
+    return instance
+  end
+
+  if path:sub(1, 1) == ':' or
+    (path:sub(1, 2) == '%:' and separator ~= '%') then
+
+    return _findByPath(path, separator)
+  end
+
+  local subpaths = _separatedPath(path, separator)
+
+  for i = 1, #subpaths do
+    local subpath = subpaths[i]
+    instance = instance:FindFirstChild(subpath, false)
+
+    if typeof(instance) ~= 'Instance' then
+      return nil, subpath
+    end
+  end
+  return instance, nil
+end
+
+local function findChildByPath(instance, path, separator)
+  if typeof(instance) ~= 'Instance' then
+    error((
+      "Invalid argument #1 to paths.findChildByPath " ..
+      "(Instance expected, received %s)"):format(getRefLabel(instance)), 2)
+  end
+
+  if path ~= nil and type(path) ~= 'string' then
+    error((
+      "Invalid argument #2 to paths.findChildByPath " ..
+      "(string expected, received %s)"):format(getRefLabel(path)), 2)
+  end
+
+  if separator ~= nil then
+    if type(separator) ~= 'string' then
+      error((
+        "Invalid argument #3 to paths.findChildByPath " ..
+        "(string expected, received %s)"):format(getRefLabel(separator)), 2)
+    end
+
+    if #separator ~= 1 then
+      error((
+        "Invalid argument #3 to paths.findChildByPath " ..
+        "(single-character string expected, received '%s')"
+        ):format(separator), 2)
+    end
+
+    if separator == '\b' then
+      error(
+        "Invalid argument #3 to paths.findChildByPath " ..
+        "(string must not be '\\b' (bell character))", 2)
+    end
+  end
+
+  return _findChildByPath(instance, path, separator)
+end
+
+return {
+  findByPath = findByPath,
+  findChildByPath = findChildByPath,
+  separatedPath = separatedPath,
+}</string>
+            </Properties>
+          </Item>
+          <Item class="ModuleScript" referent="9">
+            <Properties>
+              <string name="Name">tables</string>
+              <string name="Source">local debug = require(script.Parent.debug)
+local getRefLabel = debug.getRefLabel
+local trimErrMsgLineNum = debug.trimErrMsgLineNum
+
+local function assign(tbl, ...)
+  if type(tbl) ~= 'table' then
+    error((
+      "Invalid argument #1 to tables.assign " ..
+      "(table expected, received %s)"):format(getRefLabel(tbl)), 2)
+  end
+
+  local args = table.pack(...)
+
+  for i = 1, args.n do
+    local arg = args[i]
+    if type(arg) == 'table' then
+      for k, v in pairs(arg) do
+        tbl[k] = v
+      end
+    end
+  end
+
+  return tbl
+end
+
+local function augment(tbl, ...)
+  if type(tbl) ~= 'table' then
+    error((
+      "Invalid argument #1 to tables.augment " ..
+      "(table expected, received %s)"):format(getRefLabel(tbl)), 2)
+  end
+
+  local args = table.pack(...)
+
+  for i = 1, args.n do
+    local arg = args[i]
+    if type(arg) == 'table' then
+      for k, v in pairs(arg) do
+        if tbl[k] == nil then
+          tbl[k] = v
+        end
+      end
+    end
+  end
+
+  return tbl
+end
+
+return {
+  assign = assign,
+  augment = augment,
+}</string>
+            </Properties>
+          </Item>
+        </Item>
+      </Item>
+    </Item>
+    <Item class="SoundService" referent="10">
+      <Properties>
+        <string name="Name">SoundService</string>
+        <bool name="RespectFilteringEnabled">true</bool>
+      </Properties>
+    </Item>
+    <Item class="Workspace" referent="11">
+      <Properties>
+        <string name="Name">Workspace</string>
+        <bool name="FilteringEnabled">true</bool>
+      </Properties>
+      <Item class="Part" referent="12">
+        <Properties>
+          <string name="Name">Baseplate</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">6446690</Color3uint8>
+          <bool name="Locked">true</bool>
+          <Vector3 name="Position">
+            <X>0</X>
+            <Y>-10</Y>
+            <Z>0</Z>
+          </Vector3>
+          <Vector3 name="size">
+            <X>512</X>
+            <Y>20</Y>
+            <Z>512</Z>
+          </Vector3>
+        </Properties>
+      </Item>
+    </Item>
+  </Item>
+</roblox>

@@ -1,0 +1,3620 @@
+<roblox version="4">
+  <Item class="Lighting" referent="0">
+    <Properties>
+      <string name="Name">Lighting</string>
+      <Color3 name="Ambient">
+        <R>0</R>
+        <G>0</G>
+        <B>0</B>
+      </Color3>
+      <float name="Brightness">2</float>
+      <bool name="GlobalShadows">true</bool>
+      <bool name="Outlines">false</bool>
+      <token name="Technology">1</token>
+    </Properties>
+  </Item>
+  <Item class="ReplicatedStorage" referent="1">
+    <Properties>
+      <string name="Name">ReplicatedStorage</string>
+    </Properties>
+    <Item class="Folder" referent="2">
+      <Properties>
+        <string name="Name">Scripts</string>
+      </Properties>
+      <Item class="Folder" referent="3">
+        <Properties>
+          <string name="Name">Helpfully</string>
+        </Properties>
+        <Item class="ModuleScript" referent="4">
+          <Properties>
+            <string name="Name">Logger</string>
+            <string name="Source">local bind = require(script.Parent.functions).bind
+local getRefLabel = require(script.Parent.debug).getRefLabel
+
+local LOG_LEVEL = {
+  NONE = 100,
+  FATAL = 95,
+  CRITICAL = 85,
+  ERROR = 75,
+  WARN = 65,
+  INFO = 50,
+  VERBOSE = 35,
+  DEBUG = 20,
+  ALL = 0,
+}
+
+local PREFIX = {
+  [LOG_LEVEL.NONE] = 'NONE',
+  [LOG_LEVEL.FATAL] = 'FATAL',
+  [LOG_LEVEL.CRITICAL] = 'CRITICAL',
+  [LOG_LEVEL.ERROR] = 'ERROR',
+  [LOG_LEVEL.WARN] = 'WARN',
+  [LOG_LEVEL.INFO] = 'INFO',
+  [LOG_LEVEL.VERBOSE] = 'VERBOSE',
+  [LOG_LEVEL.DEBUG] = 'DEBUG',
+  [LOG_LEVEL.ALL] = 'ALL',
+}
+
+local function getLogLevel(level)
+  if level == nil then
+    return LOG_LEVEL.ALL
+  end
+
+  if type(level) == 'number' then
+    return level
+  end
+
+  if type(level) == 'string' then
+    return LOG_LEVEL[string.upper(level)]
+  end
+
+  return nil
+end
+
+local function getLogPrefix(name, msgLevel)
+  local prefix = PREFIX[msgLevel]
+  local prefix = prefix and ("[%s] "):format(prefix) or ''
+  name = name and ("{%s}: "):format(name) or ''
+
+  return prefix .. name
+end
+
+local function noOp() end
+
+local function onLogError(logLevel, name, message)
+  error(string.format("%s%s", name or '', message or ''))
+end
+
+local function onLogPrint(logLevel, name, message)
+  print(string.format("%s%s", name or '', message or ''))
+end
+
+local function onLogWarn(logLevel, name, message)
+  warn(string.format("%s%s", name or '', message or ''))
+end
+
+local function create(config)
+  local _ = config or (config == nil and {})
+
+  if type(_) ~= 'table' then
+    error((
+      "Invalid argument #1 to Logger.create " ..
+      "(table expected, received %s)"):format(getRefLabel(_)), 2)
+  end
+
+  local name = _.name
+
+  if name ~= nil and type(name) ~= 'string' then
+    error((
+      "Invalid property 'name' in argument #1 to Logger.create " ..
+      "(string expected, received %s)"):format(getRefLabel(name)), 2)
+  end
+
+  local level = getLogLevel(_.level)
+
+  if level == nil then
+    error((
+      "Invalid property 'level' in argument #1 to Logger.create " ..
+      "(number or log-level name expected, received %s)"
+      ):format(getRefLabel(_.level)), 2)
+  end
+
+  local onLogFn = _.onLogFn
+
+  if onLogFn ~= nil and type(onLogFn) ~= 'function' then
+    error((
+      "Invalid property 'onLogFn' in argument #1 to Logger.create " ..
+      "(function expected, received %s)"):format(getRefLabel(onLogFn)), 2)
+  end
+
+  local module = {
+    critical = LOG_LEVEL.CRITICAL &lt; level and noOp or
+      bind(onLogFn or onLogError, LOG_LEVEL.CRITICAL,
+        not onLogFn and getLogPrefix(name, LOG_LEVEL.CRITICAL) or name),
+
+    debug = LOG_LEVEL.DEBUG &lt; level and noOp or
+      bind(nLogFn or onLogPrint, LOG_LEVEL.DEBUG,
+        not onLogFn and getLogPrefix(name, LOG_LEVEL.DEBUG) or name),
+
+    error = LOG_LEVEL.ERROR &lt; level and noOp or
+      bind(onLogFn or onLogError, LOG_LEVEL.ERROR,
+        not onLogFn and getLogPrefix(name, LOG_LEVEL.ERROR) or name),
+
+    fatal = LOG_LEVEL.FATAL &lt; level and noOp or
+      bind(onLogFn or onLogError, LOG_LEVEL.FATAL,
+        not onLogFn and getLogPrefix(name, LOG_LEVEL.FATAL) or name),
+
+    info = LOG_LEVEL.INFO &lt; level and noOp or
+      bind(onLogFn or onLogPrint, LOG_LEVEL.INFO,
+        not onLogFn and getLogPrefix(name, LOG_LEVEL.INFO) or name),
+
+    verbose = LOG_LEVEL.VERBOSE &lt; level and noOp or
+      bind(onLogFn or onLogPrint, LOG_LEVEL.VERBOSE,
+        not onLogFn and getLogPrefix(name, LOG_LEVEL.VERBOSE) or name),
+
+    warn = LOG_LEVEL.WARN &lt; level and noOp or
+      bind(onLogFn or onLogWarn, LOG_LEVEL.WARN,
+        not onLogFn and getLogPrefix(name, LOG_LEVEL.WARN) or name),
+
+    LOG_LEVEL = LOG_LEVEL,
+  }
+
+  setmetatable(module, { __call = function(table, _) return create(_) end })
+  return module
+end
+
+return create()</string>
+          </Properties>
+        </Item>
+        <Item class="ModuleScript" referent="5">
+          <Properties>
+            <string name="Name">Logger.spec</string>
+            <string name="Source">return function()
+  local Logger = require(script.Parent.Logger)
+
+  describe("()", function()
+    describe("errors", function()
+      it("should error when args[1] ~= table or nil", function()
+        expect(function()
+          Logger(false)
+        end).to.throw("Invalid argument")
+      end)
+      it("should error when 'level' property of args[1] ~= number, string or nil", function()
+        expect(function()
+          Logger({ level = false })
+        end).to.throw("Invalid property")
+      end)
+      it("should error when 'name' property of args[1] ~= string or nil", function()
+        expect(function()
+          Logger({ name = false })
+        end).to.throw("Invalid property")
+      end)
+      it("should error when 'onLogFn' property of args[1] ~= function or nil", function()
+        expect(function()
+          Logger({ onLogFn = false })
+        end).to.throw("Invalid property")
+      end)
+    end)
+    describe("success", function()
+      describe("function return value", function()
+        local logger = Logger()
+        it("should return function 'critical'", function()
+          expect(
+            typeof(logger.critical)
+          ).to.equal("function")
+        end)
+        it("should return function 'debug'", function()
+          expect(
+            typeof(logger.debug)
+          ).to.equal("function")
+        end)
+        it("should return function 'error'", function()
+          expect(
+            typeof(logger.error)
+          ).to.equal("function")
+        end)
+        it("should return function 'fatal'", function()
+          expect(
+            typeof(logger.fatal)
+          ).to.equal("function")
+        end)
+        it("should return function 'info'", function()
+          expect(
+            typeof(logger.info)
+          ).to.equal("function")
+        end)
+        it("should return function 'verbose'", function()
+          expect(
+            typeof(logger.verbose)
+          ).to.equal("function")
+        end)
+        it("should return function 'warn'", function()
+          expect(
+            typeof(logger.warn)
+          ).to.equal("function")
+        end)
+        it("should return table 'LOG_LEVEL'", function()
+          expect(
+            typeof(logger.LOG_LEVEL)
+          ).to.equal("table")
+        end)
+        it("should return a callable table", function()
+          expect(
+            typeof(logger())
+          ).to.equal("table")
+        end)
+      end)
+      describe("function side effects", function()
+        it("should invoke onLogFn", function()
+          local isCalled = false
+
+          local logger = Logger({
+            level = "info",
+            onLogFn = function() isCalled = true; return 5 end })
+
+          expect(
+            logger.info()
+          ).to.equal(5)
+          expect(
+            isCalled
+          ).to.equal(true)
+        end)
+        it("should invoke onLogFn when log level is adequate", function()
+          local isCalled = false
+
+          local logger = Logger({
+            level = "info",
+            onLogFn = function() isCalled = true; return 5 end })
+
+          expect(
+            logger.info()
+          ).to.equal(5)
+          expect(
+            isCalled
+          ).to.equal(true)
+        end)
+        it("should not invoke onLogFn when log level is inadequate", function()
+          local isCalled = false
+
+          local logger = Logger({
+            level = "info",
+            onLogFn = function() isCalled = true; return 5 end })
+
+          expect(
+            logger.verbose()
+          ).to.equal(nil)
+          expect(
+            isCalled
+          ).to.equal(false)
+        end)
+        it("should report name appropriately", function()
+          local logger = Logger({
+            level = "info",
+            name = "testLogger",
+            onLogFn = function(logLevel, name, msg) return name end })
+
+          expect(
+            string.find(logger.info(), "testLogger")
+          ).never.to.equal(nil)
+        end)
+        it("should report log level label appropriately", function()
+          local logger = Logger({
+            level = "info",
+            onLogFn = function(logLevel) return logLevel end })
+
+          expect(
+            string.find(logger.info(), "INFO")
+          ).never.to.equal(logger.LOG_LEVEL.INFO)
+        end)
+        it("should report log message appropriately", function()
+          local logger = Logger({
+            level = "info",
+            onLogFn = function(logLevel, prefix, msg) return msg end })
+
+          expect(
+            logger.info("testLogger")
+          ).to.equal("testLogger")
+        end)
+      end)
+    end)
+  end)
+end</string>
+          </Properties>
+        </Item>
+        <Item class="ModuleScript" referent="6">
+          <Properties>
+            <string name="Name">debug</string>
+            <string name="Source">local function getRefLabel(ref)
+  local t = typeof(ref)
+
+  if t == 'Instance' then
+    local cn = type(ref.ClassName) == 'string' and
+      ref.ClassName ~= '' and ref.ClassName
+
+    local n = type(ref.name) == 'string' and
+      ref.name ~= '' and ref.name
+
+    return ("&lt;%s>%s"):format(
+      cn or 'Instance', n and (' "%s"'):format(n) or '')
+  else
+    if t == 'string' then
+      return '"' .. ref .. '"'
+    elseif t == 'boolean' or t == 'number' or ref == nil then
+      return tostring(ref)
+    else
+      return '&lt;' .. t .. '>'
+    end
+  end
+end
+
+local function trimErrMsgLineNum(message)
+  if type(message) ~= 'string' then
+    return message
+  end
+  return ((message):gsub('^[^:]+:[0-9]+: ', '', 1))
+end
+
+return {
+  getRefLabel = getRefLabel,
+  trimErrMsgLineNum = trimErrMsgLineNum,
+}</string>
+          </Properties>
+        </Item>
+        <Item class="ModuleScript" referent="7">
+          <Properties>
+            <string name="Name">debug.spec</string>
+            <string name="Source">return function()
+  local debug = require(script.Parent.debug)
+  local getRefLabel = debug.getRefLabel
+  local trimErrMsgLineNum = debug.trimErrMsgLineNum
+
+  describe("getRefLabel", function()
+    describe("success", function()
+      describe("function return value", function()
+        it("should return 'nil' when #args == 0", function()
+          expect(
+            getRefLabel()
+          ).to.equal("nil")
+        end)
+        it("should return 'nil' when args[1] == nil", function()
+          expect(
+            getRefLabel(nil)
+          ).to.equal("nil")
+        end)
+        it("should return 'false' when args[1] == false", function()
+          expect(
+            getRefLabel(false)
+          ).to.equal("false")
+        end)
+        it("should return '&lt;function>' when args[1] == function() end", function()
+          expect(
+            getRefLabel(function() end)
+          ).to.equal("&lt;function>")
+        end)
+        it("should return '5' when args[1] == 5", function()
+          expect(
+            getRefLabel(5)
+          ).to.equal("5")
+        end)
+        it("should return '&lt;Part> \"Part\"' when args[1] == Instance.new('Part')", function()
+          expect(
+            getRefLabel(Instance.new("Part"))
+          ).to.equal("&lt;Part> \"Part\"")
+        end)
+        it("should return '&lt;Folder> \"Scripts\"' when args[1] == game.ReplicatedStorage.Scripts", function()
+          expect(
+            getRefLabel(game.ReplicatedStorage.Scripts)
+          ).to.equal("&lt;Folder> \"Scripts\"")
+        end)
+        it("should return '\"string\"' when args[1] == \"string\"", function()
+          expect(
+            getRefLabel("string")
+          ).to.equal("\"string\"")
+        end)
+        it("should return '&lt;table>' when args[1] == {}", function()
+          expect(
+            getRefLabel({})
+          ).to.equal("&lt;table>")
+        end)
+      end)
+    end)
+  end)
+  describe("trimErrMsgLineNum", function()
+    describe("success", function()
+      describe("function return value", function()
+        it("should return nil when #args == 0", function()
+          expect(
+            trimErrMsgLineNum()
+          ).to.equal(nil)
+        end)
+        it("should return args[1] when args[1] ~= string", function()
+          expect(
+            trimErrMsgLineNum(false)
+          ).to.equal(false)
+        end)
+        it("should return args[1] does not have line number", function()
+          expect(
+            trimErrMsgLineNum("don't modify me")
+          ).to.equal("don't modify me")
+        end)
+        it("should return args[1] without line number", function()
+          expect(
+            trimErrMsgLineNum("stdin:1: don't modify me")
+          ).to.equal("don't modify me")
+        end)
+      end)
+    end)
+  end)
+end</string>
+          </Properties>
+        </Item>
+        <Item class="ModuleScript" referent="8">
+          <Properties>
+            <string name="Name">functions</string>
+            <string name="Source">local getRefLabel = require(script.Parent.debug).getRefLabel
+
+local function bind(fn, ...)
+  if type(fn) ~= 'function' then
+    error((
+      "Invalid argument #1 to functions.bind " ..
+      "(function expected, received %s)"):format(getRefLabel(fn)), 1)
+  end
+
+  local bound = table.pack(...)
+  local boundCount = bound.n
+
+  -- performance optimization for common bind scenarios
+  if boundCount == 0 then
+    return fn
+  elseif boundCount == 1 then
+    return function(...)
+      return fn(bound[1], ...)
+    end
+  elseif boundCount == 2 then
+    return function(...)
+      return fn(bound[1], bound[2], ...)
+    end
+  elseif boundCount == 3 then
+    return function(...)
+      return fn(bound[1], bound[2], bound[3], ...)
+    end
+  elseif boundCount == 4 then
+    return function(...)
+      return fn(bound[1], bound[2], bound[3], bound[4], ...)
+    end
+  end
+
+  -- general case which requires table concatenation for
+  -- each invocation of the bound function.
+  return function(...)
+    local fnArgs = {}
+    table.move(bound, 1, boundCount, 1, fnArgs)
+    local args = table.pack(...)
+    table.move(args, 1, #args, boundCount + 1, fnArgs)
+    return fn(table.unpack(fnArgs, 1, fnArgs.n))
+  end
+end
+
+local function listKeep(n, ...)
+  local values = table.pack(...)
+  local valuesN = values.n
+
+  if n >= valuesN or -(n) >= valuesN then
+    return ...
+  elseif n &lt; 0 then
+    n = n + valuesN
+    if n &lt; 0 then
+      n = 0
+    end
+    return table.unpack(values, n + 1, valuesN)
+  end
+
+  return table.unpack(values, 1, n)
+end
+
+local function listDrop(n, ...)
+  local values = table.pack(...)
+  local valuesN = values.n
+
+  if n >= valuesN then
+    return
+  end
+
+  return table.unpack(values, n + 1, valuesN)
+end
+
+local function bindWithModify(nFn, n, fn, ...)
+  local bound = table.pack(...)
+  local boundCount = bound.n
+
+  -- performance optimization for common bind scenarios
+  if boundCount == 0 then
+    return function(...)
+      return nFn(n, fn(...))
+    end
+  elseif boundCount == 1 then
+    return function(...)
+      return nFn(n, fn(bound[1], ...))
+    end
+  elseif boundCount == 2 then
+    return function(...)
+      return nFn(n, fn(bound[1], bound[2], ...))
+    end
+  elseif boundCount == 3 then
+    return function(...)
+      return nFn(n, fn(bound[1], bound[2], bound[3], ...))
+    end
+  elseif boundCount == 4 then
+    return function(...)
+      return nFn(n, fn(bound[1], bound[2], bound[3], bound[4], ...))
+    end
+  end
+
+  -- general case which requires table concatenation for
+  -- each invocation of the bound function.
+  return function(...)
+    local fnArgs = {}
+    table.move(bound, 1, boundCount, 1, fnArgs)
+    local args = table.pack(...)
+    table.move(args, 1, #args, boundCount + 1, fnArgs)
+    return nFn(n, fn(table.unpack(fnArgs, 1, fnArgs.n)))
+  end
+end
+
+local function bindDrop(n, fn, ...)
+  if type(n) ~= 'number' then
+    error((
+      "Invalid argument #1 to functions.bindDrop " ..
+      "(number expected, received %s)"):format(getRefLabel(n)), 1)
+  end
+
+  if n &lt; 0 then
+    error((
+      "Invalid argument #1 to functions.bindDrop " ..
+      "(non-negative number expected, received %s)"):format(n), 1)
+  end
+
+  if type(fn) ~= 'function' then
+    error((
+      "Invalid argument #2 to functions.bindDrop " ..
+      "(function expected, received %s)"):format(getRefLabel(fn)), 1)
+  end
+
+  if n == 0 then
+    return bind(fn, ...)
+  end
+
+  return bindWithModify(listDrop, n, fn, ...)
+end
+
+local function bindKeep(n, fn, ...)
+  if type(n) ~= 'number' then
+    error((
+      "Invalid argument #1 to functions.bindKeep " ..
+      "(number expected, received %s)"):format(getRefLabel(n)), 1)
+  end
+
+  if type(fn) ~= 'function' then
+    error((
+      "Invalid argument #2 to functions.bindKeep " ..
+      "(function expected, received %s)"):format(getRefLabel(fn)), 1)
+  end
+
+  if n == 0 then
+    local bound = bind(fn, ...)
+    return function()
+      bound()
+    end
+  end
+
+  return bindWithModify(listKeep, n, fn, ...)
+end
+
+local function noOp() end
+
+return {
+  bind = bind,
+  bindDrop = bindDrop,
+  bindKeep = bindKeep,
+  noOp = noOp,
+}</string>
+          </Properties>
+        </Item>
+        <Item class="ModuleScript" referent="9">
+          <Properties>
+            <string name="Name">functions.spec</string>
+            <string name="Source">return function()
+  local functions = require(script.Parent.functions)
+  local bind = functions.bind
+  local bindDrop = functions.bindDrop
+  local bindKeep = functions.bindKeep
+  local noOp = functions.noOp
+
+  local function typestr(...)
+    local args = table.pack(...)
+    local _types = {}
+    for i, k in ipairs(args) do
+      _types[i] = type(k)
+    end
+    return "[" .. table.concat(_types, ":") .. "]"
+  end
+
+  local function vals(...)
+    return ...
+  end
+
+  local function valstr(...)
+    local args = table.pack(...)
+    return "[" .. table.concat(args, ":") .. "]"
+  end
+
+  describe("bind", function()
+    describe("errors", function()
+      it("should error when #args == 0", function()
+        expect(function()
+          bind()
+        end).to.throw("Invalid argument")
+      end)
+      it("should error when args[1] ~= function", function()
+        expect(function()
+          bind("invalid")
+        end).to.throw("Invalid argument")
+      end)
+    end)
+    describe("success", function()
+      describe("function return value", function()
+        it("should return bound args[1] when #args == 1", function()
+          expect(
+            bind(valstr)
+          ).to.equal(valstr)
+        end)
+        it("should return bound args[1] when #args == 2", function()
+          expect(
+            bind(valstr, 1)()
+          ).to.equal("[1]")
+        end)
+        it("should return bound args[1] when #args == 3", function()
+          expect(
+            bind(valstr, 1, 2)()
+          ).to.equal("[1:2]")
+        end)
+        it("should return bound args[1] when #args == 4", function()
+          expect(
+            bind(valstr, 1, 2, 3)()
+          ).to.equal("[1:2:3]")
+        end)
+        it("should return bound args[1] when #args == 5", function()
+          expect(
+            bind(valstr, 1, 2, 3, 4)()
+          ).to.equal("[1:2:3:4]")
+        end)
+        it("should return bound args[1] when #args == 9", function()
+          expect(
+            bind(valstr, 1, 2, 3, 4, 5, 6, 7, 8)()
+          ).to.equal("[1:2:3:4:5:6:7:8]")
+        end)
+        it("should return bound args[1] when #args == 1 and ()#args == 2", function()
+          expect(
+            bind(valstr)(9, 10)
+          ).to.equal("[9:10]")
+        end)
+        it("should return bound args[1] when #args == 2 and ()#args == 2", function()
+          expect(
+            bind(valstr, 1)(9, 10)
+          ).to.equal("[1:9:10]")
+        end)
+        it("should return bound args[1] when #args == 3 and ()#args == 2", function()
+          expect(
+            bind(valstr, 1, 2)(9, 10)
+          ).to.equal("[1:2:9:10]")
+        end)
+        it("should return bound args[1] when #args == 4 and ()#args == 2", function()
+          expect(
+            bind(valstr, 1, 2, 3)(9, 10)
+          ).to.equal("[1:2:3:9:10]")
+        end)
+        it("should return bound args[1] when #args == 5 and ()#args == 2", function()
+          expect(
+            bind(valstr, 1, 2, 3, 4)(9, 10)
+          ).to.equal("[1:2:3:4:9:10]")
+        end)
+        it("should return bound args[1] when #args == 9 and ()#args == 2", function()
+          expect(
+            bind(valstr, 1, 2, 3, 4, 5, 6, 7, 8)(9, 10)
+          ).to.equal("[1:2:3:4:5:6:7:8:9:10]")
+        end)
+      end)
+    end)
+  end)
+  describe("bindDrop", function()
+    describe("errors", function()
+      it("should error when #args == 0", function()
+        expect(function()
+          bindDrop()
+        end).to.throw("Invalid argument")
+      end)
+      it("should error when args[1] ~= number", function()
+        expect(function()
+          bindDrop("invalid")
+        end).to.throw("Invalid argument")
+      end)
+      it("should error when args[1] &lt; 0", function()
+        expect(function()
+          bindDrop(-1)
+        end).to.throw("Invalid argument")
+      end)
+      it("should error when args[2] ~= function", function()
+        expect(function()
+          bindDrop("invalid")
+        end).to.throw("Invalid argument")
+      end)
+    end)
+    describe("success", function()
+      describe("function return value", function()
+        it("should return bound args[2] when args[1] == 0", function()
+          expect(
+            bindDrop(0, vals)
+          ).to.equal(bind(vals))
+        end)
+        it("should return bound args[2] that discards 0 values when args[1] == 0 and #args == 6 and ()#args == 2", function()
+          expect(
+            valstr(bindDrop(0, vals, 1, 2, 3, 4)(5, 6))
+          ).to.equal("[1:2:3:4:5:6]")
+        end)
+        it("should return bound args[2] that discards 0 values when args[1] == 0 and #args == 7 and ()#args == 2", function()
+          expect(
+            valstr(bindDrop(0, vals, 1, 2, 3, 4, 5)(6, 7))
+          ).to.equal("[1:2:3:4:5:6:7]")
+        end)
+        it("should return bound args[2] that discards 2 values when args[1] == 0 and #args == 6 and ()#args == 2", function()
+          expect(
+            valstr(bindDrop(2, vals, 1, 2, 3, 4)(5, 6))
+          ).to.equal("[3:4:5:6]")
+        end)
+        it("should return bound args[2] that discards 2 values when args[1] == 0 and #args == 7 and ()#args == 2", function()
+          expect(
+            valstr(bindDrop(2, vals, 1, 2, 3, 4, 5)(6, 7))
+          ).to.equal("[3:4:5:6:7]")
+        end)
+        it("should return bound args[2] that discards all values when args[1] == 7 and #args == 7 and ()#args == 2", function()
+          expect(
+            valstr(bindDrop(7, vals, 1, 2, 3, 4, 5)(6, 7))
+          ).to.equal("[]")
+        end)
+        it("should return bound args[2] that discards all values when args[1] == 8 and #args == 7 and ()#args == 2", function()
+          expect(
+            valstr(bindDrop(8, vals, 1, 2, 3, 4, 5)(6, 7))
+          ).to.equal("[]")
+        end)
+      end)
+    end)
+  end)
+  describe("bindKeep", function()
+    describe("errors", function()
+      it("should error when #args == 0", function()
+        expect(function()
+          bindKeep()
+        end).to.throw("Invalid argument")
+      end)
+      it("should error when args[1] ~= number", function()
+        expect(function()
+          bindKeep("invalid")
+        end).to.throw("Invalid argument")
+      end)
+      it("should error when args[2] ~= function", function()
+        expect(function()
+          bindKeep("invalid")
+        end).to.throw("Invalid argument")
+      end)
+    end)
+    describe("success", function()
+      describe("function return value", function()
+        it("should return bound args[2] that keeps no values when args[1] == 0 and #args == 6 and ()#args == 2", function()
+          expect(
+            valstr(bindKeep(0, vals, 1, 2, 3, 4)(5, 6))
+          ).to.equal("[]")
+        end)
+        it("should return bound args[2] that keeps 1 value when args[1] == 1 and #args == 7 and ()#args == 2", function()
+          expect(
+            valstr(bindKeep(1, vals, 1, 2, 3, 4, 5)(6, 7))
+          ).to.equal("[1]")
+        end)
+        it("should return bound args[2] that keeps the last value when args[1] == -1 and #args == 7 and ()#args == 2", function()
+          expect(
+            valstr(bindKeep(-1, vals, 1, 2, 3, 4, 5)(6, 7))
+          ).to.equal("[7]")
+        end)
+        it("should return bound args[2] that keeps 2 values when args[1] == 2 and #args == 6 and ()#args == 2", function()
+          expect(
+            valstr(bindKeep(2, vals, 1, 2, 3, 4)(5, 6))
+          ).to.equal("[1:2]")
+        end)
+        it("should return bound args[2] that keeps all values when args[1] == 100 and #args == 7 and ()#args == 2", function()
+          expect(
+            valstr(bindKeep(100, vals, 1, 2, 3, 4, 5)(6, 7))
+          ).to.equal("[1:2:3:4:5:6:7]")
+        end)
+        it("should return bound args[2] that keeps the last 4 values when args[1] == -4 and #args == 6 and ()#args == 2", function()
+          expect(
+            valstr(bindKeep(-4, vals, 1, 2, 3, 4)(5, 6))
+          ).to.equal("[3:4:5:6]")
+        end)
+        it("should return bound args[2] that keeps all values when args[1] == -100 and #args == 7 and ()#args == 2", function()
+          expect(
+            valstr(bindKeep(-100, vals, 1, 2, 3, 4, 5)(6, 7))
+          ).to.equal("[1:2:3:4:5:6:7]")
+        end)
+      end)
+    end)
+  end)
+end</string>
+          </Properties>
+        </Item>
+        <Item class="ModuleScript" referent="10">
+          <Properties>
+            <string name="Name">paths</string>
+            <string name="Source">local debug = require(script.Parent.debug)
+local getRefLabel = debug.getRefLabel
+local trimErrMsgLineNum = debug.trimErrMsgLineNum
+
+local function _separatedPath(path, separator)
+  if path == nil then
+    return {}
+  end
+
+  if separator == nil then
+    separator = '.'
+  end
+
+  local _path = path
+  local hasPercent = false
+
+  if separator ~= '%' and (path):find('%%') then
+    _path = (path)
+      :gsub('%%%%', '\bp'):gsub('%%%' .. separator, '\bs')
+      :gsub('\bp', '%%'):gsub('%%(.)', '%1')
+    hasPercent = true
+  end
+
+  local paths = (_path):split(separator)
+  local _paths = {}
+
+  for i, subpath in pairs(paths) do
+    if subpath ~= '' then
+      if hasPercent then
+        subpath = (subpath):gsub('\bs', separator)
+      end
+      _paths[#_paths + 1] = subpath
+    end
+  end
+
+  return _paths
+end
+
+local function separatedPath(path, separator)
+  if path ~= nil then
+    if type(path) ~= 'string' then
+      error((
+        "Invalid argument #1 to paths.separatedPath " ..
+        "(string expected, received %s)"):format(getRefLabel(path)), 2)
+    end
+
+    if path:find('\b') then
+      error((
+        "Invalid argument #1 to paths.separatedPath " ..
+        "(string must not contain '\\b' (bell character), received '%s')"
+        ):format(path), 2)
+    end
+  end
+
+  if separator ~= nil then
+    if type(separator) ~= 'string' then
+      error((
+        "Invalid argument #2 to paths.separatedPath " ..
+        "(string expected, received %s)"):format(getRefLabel(separator)), 2)
+    end
+
+    if #separator ~= 1 then
+      error((
+        "Invalid argument #2 to paths.separatedPath " ..
+        "(single-character string expected, received '%s')"
+        ):format(separator), 2)
+    end
+
+    if separator == '\b' then
+      error((
+        "Invalid argument #2 to paths.separatedPath " ..
+        "(string must not contain '\\b' (bell character), received '%s')"
+        ):format(separator), 2)
+    end
+  end
+
+  return _separatedPath(path, separator)
+end
+
+local function _findByPath(path, separator)
+  if (path or '') == '' then
+    return nil, nil
+  end
+
+  local subpaths = _separatedPath(path, separator)
+
+  if #subpaths == 0 then
+    return nil, nil
+  end
+
+  local serviceName = subpaths[1]:sub(2)
+
+  local instance = nil
+  status, instance = pcall(
+    function() return game:GetService(serviceName) end)
+
+  if typeof(instance) ~= 'Instance' then
+    return nil, serviceName
+  end
+
+  for i = 2, #subpaths do
+    local subpath = subpaths[i]
+    instance = instance:FindFirstChild(subpath, false)
+
+    if typeof(instance) ~= 'Instance' then
+      return nil, subpath
+    end
+  end
+  return instance
+end
+
+local function findByPath(path, separator)
+  if path ~= nil then
+    if type(path) ~= 'string' then
+      error((
+        "Invalid argument #1 to paths.findByPath " ..
+        "(string expected, received %s)"):format(getRefLabel(path)), 2)
+    end
+
+    if not(
+      path:sub(1, 1) == ':' or
+      (path:sub(1, 2) == '%:' and separator ~= '%')) then
+
+      error((
+        "Invalid argument #1 to paths.findByPath " ..
+        "(string must begin with a service name prefixed with ':', " ..
+        "received '%s')"):format(path), 2)
+    end
+
+    if path:find('\b') then
+      error((
+        "Invalid argument #1 to paths.findByPath " ..
+        "(string must not contain '\\b' (bell character), received '%s')"
+        ):format(path), 2)
+    end
+  end
+
+  if separator ~= nil then
+    if type(separator) ~= 'string' then
+      error((
+        "Invalid argument #2 to paths.findByPath " ..
+        "(string expected, received %s)"):format(getRefLabel(separator)), 2)
+    end
+
+    if #separator ~= 1 then
+      error((
+        "Invalid argument #2 to paths.findByPath " ..
+        "(single-character string expected, received '%s')"
+        ):format(separator), 2)
+    end
+
+    if separator == '\b' then
+      error((
+        "Invalid argument #2 to paths.findByPath " ..
+        "(string must not contain '\\b' (bell character), received '%s')"
+        ):format(separator), 2)
+    end
+  end
+
+  return _findByPath(path, separator)
+end
+
+local function _findChildByPath(instance, path, separator)
+  if path == nil then
+    return instance
+  end
+
+  if path:sub(1, 1) == ':' or
+    (path:sub(1, 2) == '%:' and separator ~= '%') then
+
+    return _findByPath(path, separator)
+  end
+
+  local subpaths = _separatedPath(path, separator)
+
+  for i = 1, #subpaths do
+    local subpath = subpaths[i]
+    instance = instance:FindFirstChild(subpath, false)
+
+    if typeof(instance) ~= 'Instance' then
+      return nil, subpath
+    end
+  end
+  return instance, nil
+end
+
+local function findChildByPath(instance, path, separator)
+  if typeof(instance) ~= 'Instance' then
+    error((
+      "Invalid argument #1 to paths.findChildByPath " ..
+      "(Instance expected, received %s)"):format(getRefLabel(instance)), 2)
+  end
+
+  if path ~= nil and type(path) ~= 'string' then
+    error((
+      "Invalid argument #2 to paths.findChildByPath " ..
+      "(string expected, received %s)"):format(getRefLabel(path)), 2)
+  end
+
+  if separator ~= nil then
+    if type(separator) ~= 'string' then
+      error((
+        "Invalid argument #3 to paths.findChildByPath " ..
+        "(string expected, received %s)"):format(getRefLabel(separator)), 2)
+    end
+
+    if #separator ~= 1 then
+      error((
+        "Invalid argument #3 to paths.findChildByPath " ..
+        "(single-character string expected, received '%s')"
+        ):format(separator), 2)
+    end
+
+    if separator == '\b' then
+      error(
+        "Invalid argument #3 to paths.findChildByPath " ..
+        "(string must not be '\\b' (bell character))", 2)
+    end
+  end
+
+  return _findChildByPath(instance, path, separator)
+end
+
+return {
+  findByPath = findByPath,
+  findChildByPath = findChildByPath,
+  separatedPath = separatedPath,
+}</string>
+          </Properties>
+        </Item>
+        <Item class="ModuleScript" referent="11">
+          <Properties>
+            <string name="Name">paths.spec</string>
+            <string name="Source">return function()
+  local paths = require(script.Parent.paths)
+  local findByPath = paths.findByPath
+  local findChildByPath = paths.findChildByPath
+  local separatedPath = paths.separatedPath
+
+  describe("findByPath", function()
+    describe("errors", function()
+      it("should error when args[1] ~= string", function()
+        expect(function()
+          findByPath(false, "")
+        end).to.throw("Invalid argument")
+      end)
+      it("should error when args[1][1] ~= ':'", function()
+        expect(function()
+          findByPath("invalid", "")
+        end).to.throw("Invalid argument")
+      end)
+    end)
+    describe("success", function()
+      describe("function return value", function()
+        it("should return nil when #args == 0", function()
+          expect(
+            findByPath()
+          ).to.equal(nil)
+        end)
+        it("should return nil, 'invalid' when args = ':invalid', '.'", function()
+          local instance, subpath = findByPath(":invalid", ".")
+          expect(
+            instance
+          ).to.equal(nil)
+          expect(
+            subpath
+          ).to.equal("invalid")
+        end)
+        it("should return ReplicatedStorage when args = ':ReplicatedStorage', '.'", function()
+          local instance, subpath = findByPath(":ReplicatedStorage", ".")
+          expect(
+            instance
+          ).to.equal(game.ReplicatedStorage)
+          expect(
+            subpath
+          ).to.equal(nil)
+        end)
+        it("should return ReplicatedStorage when args = game, '%:ReplicatedStorage', '.'", function()
+          local instance, subpath = findChildByPath(
+            game, "%:ReplicatedStorage", ".")
+          expect(
+            instance
+          ).to.equal(game.ReplicatedStorage)
+          expect(
+            subpath
+          ).to.equal(nil)
+        end)
+        it("should return ReplicatedStorage.Scripts when args = ':ReplicatedStorage.Scripts', '.'", function()
+          local instance, subpath = findByPath(
+            ":ReplicatedStorage.Scripts", ".")
+          expect(
+            instance
+          ).to.equal(game.ReplicatedStorage.Scripts)
+          expect(
+            subpath
+          ).to.equal(nil)
+        end)
+        it("should return ReplicatedStorage.Scripts when args = ':ReplicatedStorage%Scripts', '%'", function()
+          local instance, subpath = findByPath(
+            ":ReplicatedStorage%Scripts", "%")
+          expect(
+            instance
+          ).to.equal(game.ReplicatedStorage.Scripts)
+          expect(
+            subpath
+          ).to.equal(nil)
+        end)
+        it("should return nil, 'ReplicatedStorage.Scripts' when args = ':ReplicatedStorage%.Scripts', '.'", function()
+          local instance, subpath = findByPath(
+            ":ReplicatedStorage%.Scripts", ".")
+          expect(
+            instance
+          ).to.equal(nil)
+          expect(
+            subpath
+          ).to.equal("ReplicatedStorage.Scripts")
+        end)
+        it("should return nil, 'Invalid' when args = ':ReplicatedStorage.Invalid', '.'", function()
+          local instance, subpath = findByPath(
+            ":ReplicatedStorage.Invalid", ".")
+          expect(
+            instance
+          ).to.equal(nil)
+          expect(
+            subpath
+          ).to.equal("Invalid")
+        end)
+      end)
+    end)
+  end)
+  describe("findChildByPath", function()
+    describe("errors", function()
+      it("should error when #args == 0", function()
+        expect(function()
+          findChildByPath()
+        end).to.throw("Invalid argument")
+      end)
+      it("should error when args[1] ~= Instance", function()
+        expect(function()
+          findChildByPath(false)
+        end).to.throw("Invalid argument")
+      end)
+      it("should error when args[2] ~= string", function()
+        expect(function()
+          findByPath(game, false)
+        end).to.throw("Invalid argument")
+      end)
+    end)
+    describe("success", function()
+      describe("function return value", function()
+        it("should return ReplicatedStorage when args = game, ':ReplicatedStorage', '.'", function()
+          local instance, subpath = findChildByPath(
+            game, ":ReplicatedStorage", ".")
+          expect(
+            instance
+          ).to.equal(game.ReplicatedStorage)
+          expect(
+            subpath
+          ).to.equal(nil)
+        end)
+        it("should return ReplicatedStorage when args = game, '%:ReplicatedStorage', '.'", function()
+          local instance, subpath = findChildByPath(
+            game, "%:ReplicatedStorage", ".")
+          expect(
+            instance
+          ).to.equal(game.ReplicatedStorage)
+          expect(
+            subpath
+          ).to.equal(nil)
+        end)
+        it("should return ReplicatedStorage.Script when args = ReplicatedStorage, 'Scripts', '.'", function()
+          local instance, subpath = findChildByPath(
+            game.ReplicatedStorage, "Scripts", ".")
+          expect(
+            instance
+          ).to.equal(game.ReplicatedStorage.Scripts)
+          expect(
+            subpath
+          ).to.equal(nil)
+        end)
+        it("should return ReplicatedStorage.Script.Helpfully when args = ReplicatedStorage, 'Scripts.Helpfully', '.'", function()
+          local instance, subpath = findChildByPath(
+            game.ReplicatedStorage, "Scripts.Helpfully", ".")
+          expect(
+            instance
+          ).to.equal(game.ReplicatedStorage.Scripts.Helpfully)
+          expect(
+            subpath
+          ).to.equal(nil)
+        end)
+        it("should return nil, 'Invalid' when args = ReplicatedStorage, 'Scripts.Invalid', '.'", function()
+          local instance, subpath = findChildByPath(
+            game.ReplicatedStorage, "Scripts.Invalid", ".")
+          expect(
+            instance
+          ).to.equal(nil)
+          expect(
+            subpath
+          ).to.equal("Invalid")
+        end)
+      end)
+    end)
+  end)
+  describe("separatedPath", function()
+    describe("errors", function()
+      it("should error when args[1] ~= string", function()
+        expect(function()
+          separatedPath(false, "")
+        end).to.throw("Invalid argument")
+      end)
+      it("should error when args[2] ~= string or nil", function()
+        expect(function()
+          separatedPath("", false)
+        end).to.throw("Invalid argument")
+      end)
+      it("should error when #args[2] &lt; 1", function()
+        expect(function()
+          separatedPath("", "")
+        end).to.throw("Invalid argument")
+      end)
+      it("should error when #args[2] > 1", function()
+        expect(function()
+          separatedPath("", "invalid")
+        end).to.throw("Invalid argument")
+      end)
+      it("should error when args[1] contains \\b", function()
+        expect(function()
+          separatedPath("[\\b]", "")
+        end).to.throw("Invalid argument")
+      end)
+      it("should error when args[2] contains \\b", function()
+        expect(function()
+          separatedPath("", "[\\b]")
+        end).to.throw("Invalid argument")
+      end)
+    end)
+    describe("success", function()
+      describe("function return value", function()
+        it("should return {} when #args == 0", function()
+          local table = separatedPath()
+          expect(
+            typeof(table)
+          ).to.equal("table")
+          expect(
+            #table
+          ).to.equal(0)
+        end)
+        it("should return 'test' when args = 'test', ':'", function()
+          expect(
+            table.concat(separatedPath("test", ":"), ",")
+          ).to.equal("test")
+        end)
+        it("should return ['a'] when args = 'a:', ':'", function()
+          expect(
+            table.concat(separatedPath("a:", ":"), ",")
+          ).to.equal("a")
+        end)
+        it("should return ['a'] when args = ':a', ':'", function()
+          expect(
+            table.concat(separatedPath(":a", ":"), ",")
+          ).to.equal("a")
+        end)
+        it("should return ['a'] when args = ':a:', ':'", function()
+          expect(
+            table.concat(separatedPath(":a:", ":"), ",")
+          ).to.equal("a")
+        end)
+        it("should return ['a','b'] when args = 'a:b', ':'", function()
+          expect(
+            table.concat(separatedPath("a:b", ":"), ",")
+          ).to.equal("a,b")
+        end)
+        it("should return ['a','b'] when args = ':a:b:', ':'", function()
+          expect(
+            table.concat(separatedPath(":a:b:", ":"), ",")
+          ).to.equal("a,b")
+        end)
+        it("should return ['a','b','c'] when args = 'a:b:c', ':'", function()
+          expect(
+            table.concat(separatedPath("a:b:c", ":"), ",")
+          ).to.equal("a,b,c")
+        end)
+        it("should return ['a:b'] when args = 'a%:b', ':'", function()
+          expect(
+            table.concat(separatedPath("a%:b", ":"), ",")
+          ).to.equal("a:b")
+        end)
+        it("should return ['a:b','b'] when args = 'a%:b:b', ':'", function()
+          expect(
+            table.concat(separatedPath("a%:b:b", ":"), ",")
+          ).to.equal("a:b,b")
+        end)
+        it("should return ['a','b','c'] when args = 'a%b%c', '%'", function()
+          expect(
+            table.concat(separatedPath("a%b%c", "%"), ",")
+          ).to.equal("a,b,c")
+        end)
+      end)
+    end)
+  end)
+end</string>
+          </Properties>
+        </Item>
+        <Item class="ModuleScript" referent="12">
+          <Properties>
+            <string name="Name">tables</string>
+            <string name="Source">local debug = require(script.Parent.debug)
+local getRefLabel = debug.getRefLabel
+local trimErrMsgLineNum = debug.trimErrMsgLineNum
+
+local function assign(tbl, ...)
+  if type(tbl) ~= 'table' then
+    error((
+      "Invalid argument #1 to tables.assign " ..
+      "(table expected, received %s)"):format(getRefLabel(tbl)), 2)
+  end
+
+  local args = table.pack(...)
+
+  for i = 1, args.n do
+    local arg = args[i]
+    if type(arg) == 'table' then
+      for k, v in pairs(arg) do
+        tbl[k] = v
+      end
+    end
+  end
+
+  return tbl
+end
+
+local function augment(tbl, ...)
+  if type(tbl) ~= 'table' then
+    error((
+      "Invalid argument #1 to tables.augment " ..
+      "(table expected, received %s)"):format(getRefLabel(tbl)), 2)
+  end
+
+  local args = table.pack(...)
+
+  for i = 1, args.n do
+    local arg = args[i]
+    if type(arg) == 'table' then
+      for k, v in pairs(arg) do
+        if tbl[k] == nil then
+          tbl[k] = v
+        end
+      end
+    end
+  end
+
+  return tbl
+end
+
+return {
+  assign = assign,
+  augment = augment,
+}</string>
+          </Properties>
+        </Item>
+        <Item class="ModuleScript" referent="13">
+          <Properties>
+            <string name="Name">tables.spec</string>
+            <string name="Source">return function()
+  local tables = require(script.Parent.tables)
+  local assign = tables.assign
+  local augment = tables.augment
+
+  describe("assign", function()
+    describe("errors", function()
+      it("should error when #args == 0", function()
+        expect(function()
+          assign()
+        end).to.throw("Invalid argument")
+      end)
+      it("should error when args[1] ~= table", function()
+        expect(function()
+          assign(false)
+        end).to.throw("Invalid argument")
+      end)
+    end)
+    describe("success", function()
+      describe("function return value", function()
+        it("should return args[1] when args == {}", function()
+          local tblA = {}
+          expect(
+            assign(tblA)
+          ).to.equal(tblA)
+        end)
+        it("should return args[1] when args == {...}, {...}", function()
+          local tblA = { valA1 = 1 }
+          local tblB = { valB1 = 2 }
+          local result = assign(tblA, tblB)
+          expect(result).to.equal(tblA)
+        end)
+        it("should return args[1] when args == {...}, {...}, {...}", function()
+          local tblA = { valA1 = 1 }
+          local tblB = { valB1 = 2 }
+          local tblC = { valC1 = 3 }
+          local result = assign(tblA, tblB)
+          expect(result).to.equal(tblA)
+        end)
+        it("should return args[1] with all args[1] properties", function()
+          local tblA = { A = 1, B = 2, C = 3 }
+          local result = assign(tblA)
+          expect(result.A).to.equal(1)
+          expect(result.B).to.equal(2)
+          expect(result.C).to.equal(3)
+        end)
+        it("should return args[1] including new properties from args[2]", function()
+          local tblA = { A = 1 }
+          local tblB = { B = 2, C = 3, D = 4 }
+          local result = assign(tblA, tblB)
+          expect(result.A).to.equal(1)
+          expect(result.B).to.equal(2)
+          expect(result.C).to.equal(3)
+          expect(result.D).to.equal(4)
+        end)
+        it("should return args[1] properties when args[2] == {}", function()
+          local tblA = { A = 1 }
+          local tblB = {}
+          local result = assign(tblA, tblB)
+          expect(result.A).to.equal(1)
+        end)
+        it("should return args[1] including overwritten properties from args[2]", function()
+          local tblA = { valA1 = 1 }
+          local tblB = { valA1 = 2 }
+          local result = assign(tblA, tblB)
+          expect(result.valA1).to.equal(2)
+        end)
+        it("should return args[1] including new properties from args[3]", function()
+          local tblA = { valA1 = 1 }
+          local tblB = { valB1 = 2 }
+          local tblC = { valC1 = 3 }
+          local result = assign(tblA, tblB, tblC)
+          expect(result.valC1).to.equal(3)
+        end)
+        it("should return args[1] including overwritten properties from args[3]", function()
+          local tblA = { valA1 = 1 }
+          local tblB = { valB1 = 2 }
+          local tblC = { valB1 = 3, valC1 = 3 }
+          local result = assign(tblA, tblB, tblC)
+          expect(result.valB1).to.equal(3)
+          expect(result.valC1).to.equal(3)
+        end)
+        it("should ignore args ~= {...}", function()
+          local tblA = { valA1 = 1 }
+          local tblB = { valB1 = 2 }
+          local result = assign(tblA, nil, 5, tblB)
+          expect(result.valB1).to.equal(2)
+        end)
+        it("should not affect #args[1]", function()
+          local tblA = { 1, 2, 3, 4 }
+          local tblB = { valB1 = 2 }
+          local result = assign(tblA, tblB)
+          expect(#result).to.equal(4)
+        end)
+      end)
+    end)
+  end)
+  describe("augment", function()
+    describe("errors", function()
+      it("should error when #args == 0", function()
+        expect(function()
+          augment()
+        end).to.throw("Invalid argument")
+      end)
+      it("should error when args[1] ~= table", function()
+        expect(function()
+          augment(false)
+        end).to.throw("Invalid argument")
+      end)
+    end)
+    describe("success", function()
+      describe("function return value", function()
+        it("should return args[1] when args == {}", function()
+          local tblA = {}
+          expect(
+            augment(tblA)
+          ).to.equal(tblA)
+        end)
+        it("should return args when args = {...}, {...}", function()
+          local tblA = { valA1 = 1 }
+          local tblB = { valB1 = 2 }
+          local result = augment(tblA, tblB)
+          expect(result).to.equal(tblA)
+        end)
+        it("should return args when args = {...}, {...}, {...}", function()
+          local tblA = { valA1 = 1 }
+          local tblB = { valB1 = 2 }
+          local tblC = { valC1 = 3 }
+          local result = augment(tblA, tblB)
+          expect(result).to.equal(tblA)
+        end)
+        it("should return args[1] with all args[1] properties", function()
+          local tblA = { A = 1, B = 2, C = 3 }
+          local result = augment(tblA)
+          expect(result.A).to.equal(1)
+          expect(result.B).to.equal(2)
+          expect(result.C).to.equal(3)
+        end)
+        it("should return args[1] including new properties from args[2]", function()
+          local tblA = { A = 1 }
+          local tblB = { B = 2, C = 3, D = 4 }
+          local result = augment(tblA, tblB)
+          expect(result.A).to.equal(1)
+          expect(result.B).to.equal(2)
+          expect(result.C).to.equal(3)
+          expect(result.D).to.equal(4)
+        end)
+        it("should return args[1] including properties not overwritten from args[2]", function()
+          local tblA = { valA1 = 1 }
+          local tblB = { valA1 = 2 }
+          local result = augment(tblA, tblB)
+          expect(result.valA1).to.equal(1)
+        end)
+        it("should return args[1] including new properties from args[3]", function()
+          local tblA = { valA1 = 1 }
+          local tblB = { valB1 = 2 }
+          local tblC = { valC1 = 3 }
+          local result = augment(tblA, tblB, tblC)
+          expect(result.valC1).to.equal(3)
+        end)
+        it("should return args[1] including properties not overwritten from args[3]", function()
+          local tblA = { valA1 = 1 }
+          local tblB = { valB1 = 2 }
+          local tblC = { valB1 = 3, valC1 = 3 }
+          local result = augment(tblA, tblB, tblC)
+          expect(result.valB1).to.equal(2)
+          expect(result.valC1).to.equal(3)
+        end)
+        it("should ignore args ~= {...}", function()
+          local tblA = { valA1 = 1 }
+          local tblB = { valB1 = 2 }
+          local result = augment(tblA, nil, 5, tblB)
+          expect(result.valB1).to.equal(2)
+        end)
+        it("should not affect #args[1]", function()
+          local tblA = { 1, 2, 3, 4 }
+          local tblB = { valB1 = 2 }
+          local result = augment(tblA, tblB)
+          expect(#result).to.equal(4)
+        end)
+      end)
+    end)
+  end)
+end</string>
+          </Properties>
+        </Item>
+      </Item>
+    </Item>
+    <Item class="ModuleScript" referent="14">
+      <Properties>
+        <string name="Name">TestEZ</string>
+        <string name="Source">local Expectation = require(script.Expectation)
+local TestBootstrap = require(script.TestBootstrap)
+local TestEnum = require(script.TestEnum)
+local TestPlan = require(script.TestPlan)
+local TestPlanner = require(script.TestPlanner)
+local TestResults = require(script.TestResults)
+local TestRunner = require(script.TestRunner)
+local TestSession = require(script.TestSession)
+local TextReporter = require(script.Reporters.TextReporter)
+local TextReporterQuiet = require(script.Reporters.TextReporterQuiet)
+local TeamCityReporter = require(script.Reporters.TeamCityReporter)
+
+local function run(testRoot, callback)
+	local modules = TestBootstrap:getModules(testRoot)
+	local plan = TestPlanner.createPlan(modules)
+	local results = TestRunner.runPlan(plan)
+
+	callback(results)
+end
+
+local TestEZ = {
+	run = run,
+
+	Expectation = Expectation,
+	TestBootstrap = TestBootstrap,
+	TestEnum = TestEnum,
+	TestPlan = TestPlan,
+	TestPlanner = TestPlanner,
+	TestResults = TestResults,
+	TestRunner = TestRunner,
+	TestSession = TestSession,
+
+	Reporters = {
+		TextReporter = TextReporter,
+		TextReporterQuiet = TextReporterQuiet,
+		TeamCityReporter = TeamCityReporter,
+	},
+}
+
+return TestEZ</string>
+      </Properties>
+      <Item class="ModuleScript" referent="15">
+        <Properties>
+          <string name="Name">Context</string>
+          <string name="Source"><![CDATA[--[[
+	The Context object implements a write-once key-value store. It also allows
+	for a new Context object to inherit the entries from an existing one.
+]]
+local Context = {}
+
+function Context.new(parent)
+	local meta = {}
+	local index = {}
+	meta.__index = index
+
+	if parent then
+		for key, value in pairs(getmetatable(parent).__index) do
+			index[key] = value
+		end
+	end
+
+	function meta.__newindex(_obj, key, value)
+		assert(index[key] == nil, string.format("Cannot reassign %s in context", tostring(key)))
+		index[key] = value
+	end
+
+	return setmetatable({}, meta)
+end
+
+return Context
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="16">
+        <Properties>
+          <string name="Name">Expectation</string>
+          <string name="Source"><![CDATA[--[[
+	Allows creation of expectation statements designed for behavior-driven
+	testing (BDD). See Chai (JS) or RSpec (Ruby) for examples of other BDD
+	frameworks.
+
+	The Expectation class is exposed to tests as a function called `expect`:
+
+		expect(5).to.equal(5)
+		expect(foo()).to.be.ok()
+
+	Expectations can be negated using .never:
+
+		expect(true).never.to.equal(false)
+
+	Expectations throw errors when their conditions are not met.
+]]
+
+local Expectation = {}
+
+--[[
+	These keys don't do anything except make expectations read more cleanly
+]]
+local SELF_KEYS = {
+	to = true,
+	be = true,
+	been = true,
+	have = true,
+	was = true,
+	at = true,
+}
+
+--[[
+	These keys invert the condition expressed by the Expectation.
+]]
+local NEGATION_KEYS = {
+	never = true,
+}
+
+--[[
+	Extension of Lua's 'assert' that lets you specify an error level.
+]]
+local function assertLevel(condition, message, level)
+	message = message or "Assertion failed!"
+	level = level or 1
+
+	if not condition then
+		error(message, level + 1)
+	end
+end
+
+--[[
+	Returns a version of the given method that can be called with either . or :
+]]
+local function bindSelf(self, method)
+	return function(firstArg, ...)
+		if firstArg == self then
+			return method(self, ...)
+		else
+			return method(self, firstArg, ...)
+		end
+	end
+end
+
+local function formatMessage(result, trueMessage, falseMessage)
+	if result then
+		return trueMessage
+	else
+		return falseMessage
+	end
+end
+
+--[[
+	Create a new expectation
+]]
+function Expectation.new(value)
+	local self = {
+		value = value,
+		successCondition = true,
+		condition = false,
+		matchers = {},
+		_boundMatchers = {},
+	}
+
+	setmetatable(self, Expectation)
+
+	self.a = bindSelf(self, self.a)
+	self.an = self.a
+	self.ok = bindSelf(self, self.ok)
+	self.equal = bindSelf(self, self.equal)
+	self.throw = bindSelf(self, self.throw)
+	self.near = bindSelf(self, self.near)
+
+	return self
+end
+
+function Expectation.checkMatcherNameCollisions(name)
+	if SELF_KEYS[name] or NEGATION_KEYS[name] or Expectation[name] then
+		return false
+	end
+
+	return true
+end
+
+function Expectation:extend(matchers)
+	self.matchers = matchers or {}
+
+	for name, implementation in pairs(self.matchers) do
+		self._boundMatchers[name] = bindSelf(self, function(_self, ...)
+			local result = implementation(self.value, ...)
+			local pass = result.pass == self.successCondition
+
+			assertLevel(pass, result.message, 3)
+			self:_resetModifiers()
+			return self
+		end)
+	end
+
+	return self
+end
+
+function Expectation.__index(self, key)
+	-- Keys that don't do anything except improve readability
+	if SELF_KEYS[key] then
+		return self
+	end
+
+	-- Invert your assertion
+	if NEGATION_KEYS[key] then
+		local newExpectation = Expectation.new(self.value):extend(self.matchers)
+		newExpectation.successCondition = not self.successCondition
+
+		return newExpectation
+	end
+
+	if self._boundMatchers[key] then
+		return self._boundMatchers[key]
+	end
+
+	-- Fall back to methods provided by Expectation
+	return Expectation[key]
+end
+
+--[[
+	Called by expectation terminators to reset modifiers in a statement.
+
+	This makes chains like:
+
+		expect(5)
+			.never.to.equal(6)
+			.to.equal(5)
+
+	Work as expected.
+]]
+function Expectation:_resetModifiers()
+	self.successCondition = true
+end
+
+--[[
+	Assert that the expectation value is the given type.
+
+	expect(5).to.be.a("number")
+]]
+function Expectation:a(typeName)
+	local result = (type(self.value) == typeName) == self.successCondition
+
+	local message = formatMessage(self.successCondition,
+		("Expected value of type %q, got value %q of type %s"):format(
+			typeName,
+			tostring(self.value),
+			type(self.value)
+		),
+		("Expected value not of type %q, got value %q of type %s"):format(
+			typeName,
+			tostring(self.value),
+			type(self.value)
+		)
+	)
+
+	assertLevel(result, message, 3)
+	self:_resetModifiers()
+
+	return self
+end
+
+-- Make alias public on class
+Expectation.an = Expectation.a
+
+--[[
+	Assert that our expectation value is truthy
+]]
+function Expectation:ok()
+	local result = (self.value ~= nil) == self.successCondition
+
+	local message = formatMessage(self.successCondition,
+		("Expected value %q to be non-nil"):format(
+			tostring(self.value)
+		),
+		("Expected value %q to be nil"):format(
+			tostring(self.value)
+		)
+	)
+
+	assertLevel(result, message, 3)
+	self:_resetModifiers()
+
+	return self
+end
+
+--[[
+	Assert that our expectation value is equal to another value
+]]
+function Expectation:equal(otherValue)
+	local result = (self.value == otherValue) == self.successCondition
+
+	local message = formatMessage(self.successCondition,
+		("Expected value %q (%s), got %q (%s) instead"):format(
+			tostring(otherValue),
+			type(otherValue),
+			tostring(self.value),
+			type(self.value)
+		),
+		("Expected anything but value %q (%s)"):format(
+			tostring(otherValue),
+			type(otherValue)
+		)
+	)
+
+	assertLevel(result, message, 3)
+	self:_resetModifiers()
+
+	return self
+end
+
+--[[
+	Assert that our expectation value is equal to another value within some
+	inclusive limit.
+]]
+function Expectation:near(otherValue, limit)
+	assert(type(self.value) == "number", "Expectation value must be a number to use 'near'")
+	assert(type(otherValue) == "number", "otherValue must be a number")
+	assert(type(limit) == "number" or limit == nil, "limit must be a number or nil")
+
+	limit = limit or 1e-7
+
+	local result = (math.abs(self.value - otherValue) <= limit) == self.successCondition
+
+	local message = formatMessage(self.successCondition,
+		("Expected value to be near %f (within %f) but got %f instead"):format(
+			otherValue,
+			limit,
+			self.value
+		),
+		("Expected value to not be near %f (within %f) but got %f instead"):format(
+			otherValue,
+			limit,
+			self.value
+		)
+	)
+
+	assertLevel(result, message, 3)
+	self:_resetModifiers()
+
+	return self
+end
+
+--[[
+	Assert that our functoid expectation value throws an error when called.
+	An optional error message can be passed to assert that the error message
+	contains the given value.
+]]
+function Expectation:throw(messageSubstring)
+	local ok, err = pcall(self.value)
+	local result = ok ~= self.successCondition
+
+	if messageSubstring and not ok then
+		if self.successCondition then
+			result = err:find(messageSubstring, 1, true) ~= nil
+		else
+			result = err:find(messageSubstring, 1, true) == nil
+		end
+	end
+
+	local message
+
+	if messageSubstring then
+		message = formatMessage(self.successCondition,
+			("Expected function to throw an error containing %q, but it %s"):format(
+				messageSubstring,
+				err and ("threw: %s"):format(err) or "did not throw."
+			),
+			("Expected function to never throw an error containing %q, but it threw: %s"):format(
+				messageSubstring,
+				tostring(err)
+			)
+		)
+	else
+		message = formatMessage(self.successCondition,
+			"Expected function to throw an error, but it did not throw.",
+			("Expected function to succeed, but it threw an error: %s"):format(
+				tostring(err)
+			)
+		)
+	end
+
+	assertLevel(result, message, 3)
+	self:_resetModifiers()
+
+	return self
+end
+
+return Expectation
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="17">
+        <Properties>
+          <string name="Name">ExpectationContext</string>
+          <string name="Source"><![CDATA[local Expectation = require(script.Parent.Expectation)
+local checkMatcherNameCollisions = Expectation.checkMatcherNameCollisions
+
+local function copy(t)
+	local result = {}
+
+	for key, value in pairs(t) do
+		result[key] = value
+	end
+
+	return result
+end
+
+local ExpectationContext = {}
+ExpectationContext.__index = ExpectationContext
+
+function ExpectationContext.new(parent)
+	local self = {
+		_extensions = parent and copy(parent._extensions) or {},
+	}
+
+	return setmetatable(self, ExpectationContext)
+end
+
+function ExpectationContext:startExpectationChain(...)
+	return Expectation.new(...):extend(self._extensions)
+end
+
+function ExpectationContext:extend(config)
+	for key, value in pairs(config) do
+		assert(self._extensions[key] == nil, string.format("Cannot reassign %q in expect.extend", key))
+		assert(checkMatcherNameCollisions(key), string.format("Cannot overwrite matcher %q; it already exists", key))
+
+		self._extensions[key] = value
+	end
+end
+
+return ExpectationContext
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="18">
+        <Properties>
+          <string name="Name">LifecycleHooks</string>
+          <string name="Source"><![CDATA[local TestEnum = require(script.Parent.TestEnum)
+
+local LifecycleHooks = {}
+LifecycleHooks.__index = LifecycleHooks
+
+function LifecycleHooks.new()
+	local self = {
+		_stack = {},
+	}
+	return setmetatable(self, LifecycleHooks)
+end
+
+--[[
+	Returns an array of `beforeEach` hooks in FIFO order
+]]
+function LifecycleHooks:getBeforeEachHooks()
+	local key = TestEnum.NodeType.BeforeEach
+	local hooks = {}
+
+	for _, level in ipairs(self._stack) do
+		for _, hook in ipairs(level[key]) do
+			table.insert(hooks, hook)
+		end
+	end
+
+	return hooks
+end
+
+--[[
+	Returns an array of `afterEach` hooks in FILO order
+]]
+function LifecycleHooks:getAfterEachHooks()
+	local key = TestEnum.NodeType.AfterEach
+	local hooks = {}
+
+	for _, level in ipairs(self._stack) do
+		for _, hook in ipairs(level[key]) do
+			table.insert(hooks, 1, hook)
+		end
+	end
+
+	return hooks
+end
+
+--[[
+	Pushes uncalled beforeAll and afterAll hooks back up the stack
+]]
+function LifecycleHooks:popHooks()
+	table.remove(self._stack, #self._stack)
+end
+
+function LifecycleHooks:pushHooksFrom(planNode)
+	assert(planNode ~= nil)
+
+	table.insert(self._stack, {
+		[TestEnum.NodeType.BeforeAll] = self:_getHooksOfType(planNode.children, TestEnum.NodeType.BeforeAll),
+		[TestEnum.NodeType.AfterAll] = self:_getHooksOfType(planNode.children, TestEnum.NodeType.AfterAll),
+		[TestEnum.NodeType.BeforeEach] = self:_getHooksOfType(planNode.children, TestEnum.NodeType.BeforeEach),
+		[TestEnum.NodeType.AfterEach] = self:_getHooksOfType(planNode.children, TestEnum.NodeType.AfterEach),
+	})
+end
+
+--[[
+	Get the beforeAll hooks from the current level.
+]]
+function LifecycleHooks:getBeforeAllHooks()
+	return self._stack[#self._stack][TestEnum.NodeType.BeforeAll]
+end
+
+--[[
+	Get the afterAll hooks from the current level.
+]]
+function LifecycleHooks:getAfterAllHooks()
+	return self._stack[#self._stack][TestEnum.NodeType.AfterAll]
+end
+
+function LifecycleHooks:_getHooksOfType(nodes, key)
+	local hooks = {}
+
+	for _, node in ipairs(nodes) do
+		if node.type == key then
+			table.insert(hooks, node.callback)
+		end
+	end
+
+	return hooks
+end
+
+return LifecycleHooks
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="Folder" referent="19">
+        <Properties>
+          <string name="Name">Reporters</string>
+        </Properties>
+        <Item class="ModuleScript" referent="20">
+          <Properties>
+            <string name="Name">TeamCityReporter</string>
+            <string name="Source">local TestService = game:GetService("TestService")
+
+local TestEnum = require(script.Parent.Parent.TestEnum)
+
+local TeamCityReporter = {}
+
+local function teamCityEscape(str)
+	str = string.gsub(str, "([]|'[])","|%1")
+	str = string.gsub(str, "\r", "|r")
+	str = string.gsub(str, "\n", "|n")
+	return str
+end
+
+local function teamCityEnterSuite(suiteName)
+	return string.format("##teamcity[testSuiteStarted name='%s']", teamCityEscape(suiteName))
+end
+
+local function teamCityLeaveSuite(suiteName)
+	return string.format("##teamcity[testSuiteFinished name='%s']", teamCityEscape(suiteName))
+end
+
+local function teamCityEnterCase(caseName)
+	return string.format("##teamcity[testStarted name='%s']", teamCityEscape(caseName))
+end
+
+local function teamCityLeaveCase(caseName)
+	return string.format("##teamcity[testFinished name='%s']", teamCityEscape(caseName))
+end
+
+local function teamCityFailCase(caseName, errorMessage)
+	return string.format("##teamcity[testFailed name='%s' message='%s']",
+		teamCityEscape(caseName), teamCityEscape(errorMessage))
+end
+
+local function reportNode(node, buffer, level)
+	buffer = buffer or {}
+	level = level or 0
+	if node.status == TestEnum.TestStatus.Skipped then
+		return buffer
+	end
+	if node.planNode.type == TestEnum.NodeType.Describe then
+		table.insert(buffer, teamCityEnterSuite(node.planNode.phrase))
+		for _, child in ipairs(node.children) do
+			reportNode(child, buffer, level + 1)
+		end
+		table.insert(buffer, teamCityLeaveSuite(node.planNode.phrase))
+	else
+		table.insert(buffer, teamCityEnterCase(node.planNode.phrase))
+		if node.status == TestEnum.TestStatus.Failure then
+			table.insert(buffer, teamCityFailCase(node.planNode.phrase, table.concat(node.errors,"\n")))
+		end
+		table.insert(buffer, teamCityLeaveCase(node.planNode.phrase))
+	end
+end
+
+local function reportRoot(node)
+	local buffer = {}
+
+	for _, child in ipairs(node.children) do
+		reportNode(child, buffer, 0)
+	end
+
+	return buffer
+end
+
+local function report(root)
+	local buffer = reportRoot(root)
+
+	return table.concat(buffer, "\n")
+end
+
+function TeamCityReporter.report(results)
+	local resultBuffer = {
+		"Test results:",
+		report(results),
+		("%d passed, %d failed, %d skipped"):format(
+			results.successCount,
+			results.failureCount,
+			results.skippedCount
+		)
+	}
+
+	print(table.concat(resultBuffer, "\n"))
+
+	if results.failureCount > 0 then
+		print(("%d test nodes reported failures."):format(results.failureCount))
+	end
+
+	if #results.errors > 0 then
+		print("Errors reported by tests:")
+		print("")
+
+		for _, message in ipairs(results.errors) do
+			TestService:Error(message)
+
+			-- Insert a blank line after each error
+			print("")
+		end
+	end
+end
+
+return TeamCityReporter</string>
+          </Properties>
+        </Item>
+        <Item class="ModuleScript" referent="21">
+          <Properties>
+            <string name="Name">TextReporter</string>
+            <string name="Source">--[[
+	The TextReporter uses the results from a completed test to output text to
+	standard output and TestService.
+]]
+
+local TestService = game:GetService("TestService")
+
+local TestEnum = require(script.Parent.Parent.TestEnum)
+
+local INDENT = (" "):rep(3)
+local STATUS_SYMBOLS = {
+	[TestEnum.TestStatus.Success] = "+",
+	[TestEnum.TestStatus.Failure] = "-",
+	[TestEnum.TestStatus.Skipped] = "~"
+}
+local UNKNOWN_STATUS_SYMBOL = "?"
+
+local TextReporter = {}
+
+local function compareNodes(a, b)
+	return a.planNode.phrase:lower() &lt; b.planNode.phrase:lower()
+end
+
+local function reportNode(node, buffer, level)
+	buffer = buffer or {}
+	level = level or 0
+
+	if node.status == TestEnum.TestStatus.Skipped then
+		return buffer
+	end
+
+	local line
+
+	if node.status then
+		local symbol = STATUS_SYMBOLS[node.status] or UNKNOWN_STATUS_SYMBOL
+
+		line = ("%s[%s] %s"):format(
+			INDENT:rep(level),
+			symbol,
+			node.planNode.phrase
+		)
+	else
+		line = ("%s%s"):format(
+			INDENT:rep(level),
+			node.planNode.phrase
+		)
+	end
+
+	table.insert(buffer, line)
+	table.sort(node.children, compareNodes)
+
+	for _, child in ipairs(node.children) do
+		reportNode(child, buffer, level + 1)
+	end
+
+	return buffer
+end
+
+local function reportRoot(node)
+	local buffer = {}
+	table.sort(node.children, compareNodes)
+
+	for _, child in ipairs(node.children) do
+		reportNode(child, buffer, 0)
+	end
+
+	return buffer
+end
+
+local function report(root)
+	local buffer = reportRoot(root)
+
+	return table.concat(buffer, "\n")
+end
+
+function TextReporter.report(results)
+	local resultBuffer = {
+		"Test results:",
+		report(results),
+		("%d passed, %d failed, %d skipped"):format(
+			results.successCount,
+			results.failureCount,
+			results.skippedCount
+		)
+	}
+
+	print(table.concat(resultBuffer, "\n"))
+
+	if results.failureCount > 0 then
+		print(("%d test nodes reported failures."):format(results.failureCount))
+	end
+
+	if #results.errors > 0 then
+		print("Errors reported by tests:")
+		print("")
+
+		for _, message in ipairs(results.errors) do
+			TestService:Error(message)
+
+			-- Insert a blank line after each error
+			print("")
+		end
+	end
+end
+
+return TextReporter</string>
+          </Properties>
+        </Item>
+        <Item class="ModuleScript" referent="22">
+          <Properties>
+            <string name="Name">TextReporterQuiet</string>
+            <string name="Source">--[[
+	Copy of TextReporter that doesn't output successful tests.
+
+	This should be temporary, it's just a workaround to make CI environments
+	happy in the short-term.
+]]
+
+local TestService = game:GetService("TestService")
+
+local TestEnum = require(script.Parent.Parent.TestEnum)
+
+local INDENT = (" "):rep(3)
+local STATUS_SYMBOLS = {
+	[TestEnum.TestStatus.Success] = "+",
+	[TestEnum.TestStatus.Failure] = "-",
+	[TestEnum.TestStatus.Skipped] = "~"
+}
+local UNKNOWN_STATUS_SYMBOL = "?"
+
+local TextReporterQuiet = {}
+
+local function reportNode(node, buffer, level)
+	buffer = buffer or {}
+	level = level or 0
+
+	if node.status == TestEnum.TestStatus.Skipped then
+		return buffer
+	end
+
+	local line
+
+	if node.status ~= TestEnum.TestStatus.Success then
+		local symbol = STATUS_SYMBOLS[node.status] or UNKNOWN_STATUS_SYMBOL
+
+		line = ("%s[%s] %s"):format(
+			INDENT:rep(level),
+			symbol,
+			node.planNode.phrase
+		)
+	end
+
+	table.insert(buffer, line)
+
+	for _, child in ipairs(node.children) do
+		reportNode(child, buffer, level + 1)
+	end
+
+	return buffer
+end
+
+local function reportRoot(node)
+	local buffer = {}
+
+	for _, child in ipairs(node.children) do
+		reportNode(child, buffer, 0)
+	end
+
+	return buffer
+end
+
+local function report(root)
+	local buffer = reportRoot(root)
+
+	return table.concat(buffer, "\n")
+end
+
+function TextReporterQuiet.report(results)
+	local resultBuffer = {
+		"Test results:",
+		report(results),
+		("%d passed, %d failed, %d skipped"):format(
+			results.successCount,
+			results.failureCount,
+			results.skippedCount
+		)
+	}
+
+	print(table.concat(resultBuffer, "\n"))
+
+	if results.failureCount > 0 then
+		print(("%d test nodes reported failures."):format(results.failureCount))
+	end
+
+	if #results.errors > 0 then
+		print("Errors reported by tests:")
+		print("")
+
+		for _, message in ipairs(results.errors) do
+			TestService:Error(message)
+
+			-- Insert a blank line after each error
+			print("")
+		end
+	end
+end
+
+return TextReporterQuiet</string>
+          </Properties>
+        </Item>
+      </Item>
+      <Item class="ModuleScript" referent="23">
+        <Properties>
+          <string name="Name">TestBootstrap</string>
+          <string name="Source">--[[
+	Provides an interface to quickly run and report tests from a given object.
+]]
+
+local TestPlanner = require(script.Parent.TestPlanner)
+local TestRunner = require(script.Parent.TestRunner)
+local TextReporter = require(script.Parent.Reporters.TextReporter)
+
+local TestBootstrap = {}
+
+local function stripSpecSuffix(name)
+	return (name:gsub("%.spec$", ""))
+end
+local function isSpecScript(aScript)
+	return aScript:IsA("ModuleScript") and aScript.Name:match("%.spec$")
+end
+
+local function getPath(module, root)
+	root = root or game
+
+	local path = {}
+	local last = module
+
+	if last.Name == "init.spec" then
+		-- Use the directory's node for init.spec files.
+		last = last.Parent
+	end
+
+	while last ~= nil and last ~= root do
+		table.insert(path, stripSpecSuffix(last.Name))
+		last = last.Parent
+	end
+	table.insert(path, stripSpecSuffix(root.Name))
+
+	return path
+end
+
+local function toStringPath(tablePath)
+	local stringPath = ""
+	local first = true
+	for _, element in ipairs(tablePath) do
+		if first then
+			stringPath = element
+			first = false
+		else
+			stringPath = element .. " " .. stringPath
+		end
+	end
+	return stringPath
+end
+
+function TestBootstrap:getModulesImpl(root, modules, current)
+	modules = modules or {}
+	current = current or root
+
+	if isSpecScript(current) then
+		local method = require(current)
+		local path = getPath(current, root)
+		local pathString = toStringPath(path)
+
+		table.insert(modules, {
+			method = method,
+			path = path,
+			pathStringForSorting = pathString:lower()
+		})
+	end
+end
+
+--[[
+	Find all the ModuleScripts in this tree that are tests.
+]]
+function TestBootstrap:getModules(root)
+	local modules = {}
+
+	self:getModulesImpl(root, modules)
+
+	for _, child in ipairs(root:GetDescendants()) do
+		self:getModulesImpl(root, modules, child)
+	end
+
+	return modules
+end
+
+--[[
+	Runs all test and reports the results using the given test reporter.
+
+	If no reporter is specified, a reasonable default is provided.
+
+	This function demonstrates the expected workflow with this testing system:
+	1. Locate test modules
+	2. Generate test plan
+	3. Run test plan
+	4. Report test results
+
+	This means we could hypothetically present a GUI to the developer that shows
+	the test plan before we execute it, allowing them to toggle specific tests
+	before they're run, but after they've been identified!
+]]
+function TestBootstrap:run(roots, reporter, otherOptions)
+	reporter = reporter or TextReporter
+
+	otherOptions = otherOptions or {}
+	local showTimingInfo = otherOptions["showTimingInfo"] or false
+	local testNamePattern = otherOptions["testNamePattern"]
+	local extraEnvironment = otherOptions["extraEnvironment"] or {}
+
+	if type(roots) ~= "table" then
+		error(("Bad argument #1 to TestBootstrap:run. Expected table, got %s"):format(typeof(roots)), 2)
+	end
+
+	local startTime = tick()
+
+	local modules = {}
+	for _, subRoot in ipairs(roots) do
+		local newModules = self:getModules(subRoot)
+
+		for _, newModule in ipairs(newModules) do
+			table.insert(modules, newModule)
+		end
+	end
+
+	local afterModules = tick()
+
+	local plan = TestPlanner.createPlan(modules, testNamePattern, extraEnvironment)
+	local afterPlan = tick()
+
+	local results = TestRunner.runPlan(plan)
+	local afterRun = tick()
+
+	reporter.report(results)
+	local afterReport = tick()
+
+	if showTimingInfo then
+		local timing = {
+			("Took %f seconds to locate test modules"):format(afterModules - startTime),
+			("Took %f seconds to create test plan"):format(afterPlan - afterModules),
+			("Took %f seconds to run tests"):format(afterRun - afterPlan),
+			("Took %f seconds to report tests"):format(afterReport - afterRun),
+		}
+
+		print(table.concat(timing, "\n"))
+	end
+
+	return results
+end
+
+return TestBootstrap</string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="24">
+        <Properties>
+          <string name="Name">TestEnum</string>
+          <string name="Source">--[[
+	Constants used throughout the testing framework.
+]]
+
+local TestEnum = {}
+
+TestEnum.TestStatus = {
+	Success = "Success",
+	Failure = "Failure",
+	Skipped = "Skipped"
+}
+
+TestEnum.NodeType = {
+	Describe = "Describe",
+	It = "It",
+	BeforeAll = "BeforeAll",
+	AfterAll = "AfterAll",
+	BeforeEach = "BeforeEach",
+	AfterEach = "AfterEach"
+}
+
+TestEnum.NodeModifier = {
+	None = "None",
+	Skip = "Skip",
+	Focus = "Focus"
+}
+
+return TestEnum</string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="25">
+        <Properties>
+          <string name="Name">TestPlan</string>
+          <string name="Source"><![CDATA[--[[
+	Represents a tree of tests that have been loaded but not necessarily
+	executed yet.
+
+	TestPlan objects are produced by TestPlanner.
+]]
+
+local TestEnum = require(script.Parent.TestEnum)
+local Expectation = require(script.Parent.Expectation)
+
+local function newEnvironment(currentNode, extraEnvironment)
+	local env = {}
+
+	if extraEnvironment then
+		if type(extraEnvironment) ~= "table" then
+			error(("Bad argument #2 to newEnvironment. Expected table, got %s"):format(
+				typeof(extraEnvironment)), 2)
+		end
+
+		for key, value in pairs(extraEnvironment) do
+			env[key] = value
+		end
+	end
+
+	local function addChild(phrase, callback, nodeType, nodeModifier)
+		local node = currentNode:addChild(phrase, nodeType, nodeModifier)
+		node.callback = callback
+		if nodeType == TestEnum.NodeType.Describe then
+			node:expand()
+		end
+		return node
+	end
+
+	function env.describeFOCUS(phrase, callback)
+		addChild(phrase, callback, TestEnum.NodeType.Describe, TestEnum.NodeModifier.Focus)
+	end
+
+	function env.describeSKIP(phrase, callback)
+		addChild(phrase, callback, TestEnum.NodeType.Describe, TestEnum.NodeModifier.Skip)
+	end
+
+	function env.describe(phrase, callback, nodeModifier)
+		addChild(phrase, callback, TestEnum.NodeType.Describe, TestEnum.NodeModifier.None)
+	end
+
+	function env.itFOCUS(phrase, callback)
+		addChild(phrase, callback, TestEnum.NodeType.It, TestEnum.NodeModifier.Focus)
+	end
+
+	function env.itSKIP(phrase, callback)
+		addChild(phrase, callback, TestEnum.NodeType.It, TestEnum.NodeModifier.Skip)
+	end
+
+	function env.itFIXME(phrase, callback)
+		local node = addChild(phrase, callback, TestEnum.NodeType.It, TestEnum.NodeModifier.Skip)
+		warn("FIXME: broken test", node:getFullName())
+	end
+
+	function env.it(phrase, callback, nodeModifier)
+		addChild(phrase, callback, TestEnum.NodeType.It, TestEnum.NodeModifier.None)
+	end
+
+	-- Incrementing counter used to ensure that beforeAll, afterAll, beforeEach, afterEach have unique phrases
+	local lifecyclePhaseId = 0
+
+	local lifecycleHooks = {
+		[TestEnum.NodeType.BeforeAll] = "beforeAll",
+		[TestEnum.NodeType.AfterAll] = "afterAll",
+		[TestEnum.NodeType.BeforeEach] = "beforeEach",
+		[TestEnum.NodeType.AfterEach] = "afterEach"
+	}
+
+	for nodeType, name in pairs(lifecycleHooks) do
+		env[name] = function(callback)
+			addChild(name .. "_" .. tostring(lifecyclePhaseId), callback, nodeType, TestEnum.NodeModifier.None)
+			lifecyclePhaseId = lifecyclePhaseId + 1
+		end
+	end
+
+	function env.FIXME(optionalMessage)
+		warn("FIXME: broken test", currentNode:getFullName(), optionalMessage or "")
+
+		currentNode.modifier = TestEnum.NodeModifier.Skip
+	end
+
+	function env.FOCUS()
+		currentNode.modifier = TestEnum.NodeModifier.Focus
+	end
+
+	function env.SKIP()
+		currentNode.modifier = TestEnum.NodeModifier.Skip
+	end
+
+	--[[
+		This function is deprecated. Calling it is a no-op beyond generating a
+		warning.
+	]]
+	function env.HACK_NO_XPCALL()
+		warn("HACK_NO_XPCALL is deprecated. It is now safe to yield in an " ..
+			"xpcall, so this is no longer necessary. It can be safely deleted.")
+	end
+
+	env.fit = env.itFOCUS
+	env.xit = env.itSKIP
+	env.fdescribe = env.describeFOCUS
+	env.xdescribe = env.describeSKIP
+
+	env.expect = setmetatable({
+		extend = function(...)
+			error("Cannot call \"expect.extend\" from within a \"describe\" node.")
+		end,
+	}, {
+		__call = function(_self, ...)
+			return Expectation.new(...)
+		end,
+	})
+
+	return env
+end
+
+local TestNode = {}
+TestNode.__index = TestNode
+
+--[[
+	Create a new test node. A pointer to the test plan, a phrase to describe it
+	and the type of node it is are required. The modifier is optional and will
+	be None if left blank.
+]]
+function TestNode.new(plan, phrase, nodeType, nodeModifier)
+	nodeModifier = nodeModifier or TestEnum.NodeModifier.None
+
+	local node = {
+		plan = plan,
+		phrase = phrase,
+		type = nodeType,
+		modifier = nodeModifier,
+		children = {},
+		callback = nil,
+		parent = nil,
+	}
+
+	node.environment = newEnvironment(node, plan.extraEnvironment)
+	return setmetatable(node, TestNode)
+end
+
+local function getModifier(name, pattern, modifier)
+	if pattern and (modifier == nil or modifier == TestEnum.NodeModifier.None) then
+		if name:match(pattern) then
+			return TestEnum.NodeModifier.Focus
+		else
+			return TestEnum.NodeModifier.Skip
+		end
+	end
+	return modifier
+end
+
+function TestNode:addChild(phrase, nodeType, nodeModifier)
+	if nodeType == TestEnum.NodeType.It then
+		for _, child in pairs(self.children) do
+			if child.phrase == phrase then
+				error("Duplicate it block found: " .. child:getFullName())
+			end
+		end
+	end
+
+	local childName = self:getFullName() .. " " .. phrase
+	nodeModifier = getModifier(childName, self.plan.testNamePattern, nodeModifier)
+	local child = TestNode.new(self.plan, phrase, nodeType, nodeModifier)
+	child.parent = self
+	table.insert(self.children, child)
+	return child
+end
+
+--[[
+	Join the names of all the nodes back to the parent.
+]]
+function TestNode:getFullName()
+	if self.parent then
+		local parentPhrase = self.parent:getFullName()
+		if parentPhrase then
+			return parentPhrase .. " " .. self.phrase
+		end
+	end
+	return self.phrase
+end
+
+--[[
+	Expand a node by setting its callback environment and then calling it. Any
+	further it and describe calls within the callback will be added to the tree.
+]]
+function TestNode:expand()
+	local originalEnv = getfenv(self.callback)
+	local callbackEnv = setmetatable({}, { __index = originalEnv })
+	for key, value in pairs(self.environment) do
+		callbackEnv[key] = value
+	end
+	-- Copy 'script' directly to new env to make Studio debugger happy.
+	-- Studio debugger does not look into __index, because of security reasons
+	callbackEnv.script = originalEnv.script
+	setfenv(self.callback, callbackEnv)
+
+	local success, result = xpcall(self.callback, function(message)
+		return debug.traceback(tostring(message), 2)
+	end)
+
+	if not success then
+		self.loadError = result
+	end
+end
+
+local TestPlan = {}
+TestPlan.__index = TestPlan
+
+--[[
+	Create a new, empty TestPlan.
+]]
+function TestPlan.new(testNamePattern, extraEnvironment)
+	local plan = {
+		children = {},
+		testNamePattern = testNamePattern,
+		extraEnvironment = extraEnvironment,
+	}
+
+	return setmetatable(plan, TestPlan)
+end
+
+--[[
+	Add a new child under the test plan's root node.
+]]
+function TestPlan:addChild(phrase, nodeType, nodeModifier)
+	nodeModifier = getModifier(phrase, self.testNamePattern, nodeModifier)
+	local child = TestNode.new(self, phrase, nodeType, nodeModifier)
+	table.insert(self.children, child)
+	return child
+end
+
+--[[
+	Add a new describe node with the given method as a callback. Generates or
+	reuses all the describe nodes along the path.
+]]
+function TestPlan:addRoot(path, method)
+	local curNode = self
+	for i = #path, 1, -1 do
+		local nextNode = nil
+
+		for _, child in ipairs(curNode.children) do
+			if child.phrase == path[i] then
+				nextNode = child
+				break
+			end
+		end
+
+		if nextNode == nil then
+			nextNode = curNode:addChild(path[i], TestEnum.NodeType.Describe)
+		end
+
+		curNode = nextNode
+	end
+
+	curNode.callback = method
+	curNode:expand()
+end
+
+--[[
+	Calls the given callback on all nodes in the tree, traversed depth-first.
+]]
+function TestPlan:visitAllNodes(callback, root, level)
+	root = root or self
+	level = level or 0
+
+	for _, child in ipairs(root.children) do
+		callback(child, level)
+
+		self:visitAllNodes(callback, child, level + 1)
+	end
+end
+
+--[[
+	Visualizes the test plan in a simple format, suitable for debugging the test
+	plan's structure.
+]]
+function TestPlan:visualize()
+	local buffer = {}
+	self:visitAllNodes(function(node, level)
+		table.insert(buffer, (" "):rep(3 * level) .. node.phrase)
+	end)
+	return table.concat(buffer, "\n")
+end
+
+--[[
+	Gets a list of all nodes in the tree for which the given callback returns
+	true.
+]]
+function TestPlan:findNodes(callback)
+	local results = {}
+	self:visitAllNodes(function(node)
+		if callback(node) then
+			table.insert(results, node)
+		end
+	end)
+	return results
+end
+
+return TestPlan
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="26">
+        <Properties>
+          <string name="Name">TestPlanner</string>
+          <string name="Source">--[[
+	Turns a series of specification functions into a test plan.
+
+	Uses a TestPlanBuilder to keep track of the state of the tree being built.
+]]
+local TestPlan = require(script.Parent.TestPlan)
+
+local TestPlanner = {}
+
+--[[
+	Create a new TestPlan from a list of specification functions.
+
+	These functions should call a combination of `describe` and `it` (and their
+	variants), which will be turned into a test plan to be executed.
+
+	Parameters:
+		- modulesList - list of tables describing test modules {
+			method, -- specification function described above
+			path, -- array of parent entires, first element is the leaf that owns `method`
+			pathStringForSorting -- a string representation of `path`, used for sorting of the test plan
+		}
+		- testNamePattern - Only tests matching this Lua pattern string will run. Pass empty or nil to run all tests
+		- extraEnvironment - Lua table holding additional functions and variables to be injected into the specification
+							function during execution
+]]
+function TestPlanner.createPlan(modulesList, testNamePattern, extraEnvironment)
+	local plan = TestPlan.new(testNamePattern, extraEnvironment)
+
+	table.sort(modulesList, function(a, b)
+		return a.pathStringForSorting &lt; b.pathStringForSorting
+	end)
+
+	for _, module in ipairs(modulesList) do
+		plan:addRoot(module.path, module.method)
+	end
+
+	return plan
+end
+
+return TestPlanner</string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="27">
+        <Properties>
+          <string name="Name">TestResults</string>
+          <string name="Source">--[[
+	Represents a tree of test results.
+
+	Each node in the tree corresponds directly to a node in a corresponding
+	TestPlan, accessible via the 'planNode' field.
+
+	TestResults objects are produced by TestRunner using TestSession as state.
+]]
+
+local TestEnum = require(script.Parent.TestEnum)
+
+local STATUS_SYMBOLS = {
+	[TestEnum.TestStatus.Success] = "+",
+	[TestEnum.TestStatus.Failure] = "-",
+	[TestEnum.TestStatus.Skipped] = "~"
+}
+
+local TestResults = {}
+
+TestResults.__index = TestResults
+
+--[[
+	Create a new TestResults tree that's linked to the given TestPlan.
+]]
+function TestResults.new(plan)
+	local self = {
+		successCount = 0,
+		failureCount = 0,
+		skippedCount = 0,
+		planNode = plan,
+		children = {},
+		errors = {}
+	}
+
+	setmetatable(self, TestResults)
+
+	return self
+end
+
+--[[
+	Create a new result node that can be inserted into a TestResult tree.
+]]
+function TestResults.createNode(planNode)
+	local node = {
+		planNode = planNode,
+		children = {},
+		errors = {},
+		status = nil
+	}
+
+	return node
+end
+
+--[[
+	Visit all test result nodes, depth-first.
+]]
+function TestResults:visitAllNodes(callback, root)
+	root = root or self
+
+	for _, child in ipairs(root.children) do
+		callback(child)
+
+		self:visitAllNodes(callback, child)
+	end
+end
+
+--[[
+	Creates a debug visualization of the test results.
+]]
+function TestResults:visualize(root, level)
+	root = root or self
+	level = level or 0
+
+	local buffer = {}
+
+	for _, child in ipairs(root.children) do
+		if child.planNode.type == TestEnum.NodeType.It then
+			local symbol = STATUS_SYMBOLS[child.status] or "?"
+			local str = ("%s[%s] %s"):format(
+				(" "):rep(3 * level),
+				symbol,
+				child.planNode.phrase
+			)
+
+			if child.messages and #child.messages > 0 then
+				str = str .. "\n " .. (" "):rep(3 * level) .. table.concat(child.messages, "\n " .. (" "):rep(3 * level))
+			end
+
+			table.insert(buffer, str)
+		else
+			local str = ("%s%s"):format(
+				(" "):rep(3 * level),
+				child.planNode.phrase or ""
+			)
+
+			if child.status then
+				str = str .. (" (%s)"):format(child.status)
+			end
+
+			table.insert(buffer, str)
+
+			if #child.children > 0 then
+				local text = self:visualize(child, level + 1)
+				table.insert(buffer, text)
+			end
+		end
+	end
+
+	return table.concat(buffer, "\n")
+end
+
+return TestResults</string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="28">
+        <Properties>
+          <string name="Name">TestRunner</string>
+          <string name="Source"><![CDATA[--[[
+	Contains the logic to run a test plan and gather test results from it.
+
+	TestRunner accepts a TestPlan object, executes the planned tests, and
+	produces a TestResults object. While the tests are running, the system's
+	state is contained inside a TestSession object.
+]]
+
+local TestEnum = require(script.Parent.TestEnum)
+local TestSession = require(script.Parent.TestSession)
+local LifecycleHooks = require(script.Parent.LifecycleHooks)
+
+local RUNNING_GLOBAL = "__TESTEZ_RUNNING_TEST__"
+
+local TestRunner = {
+	environment = {}
+}
+
+local function wrapExpectContextWithPublicApi(expectationContext)
+	return setmetatable({
+		extend = function(...)
+			expectationContext:extend(...)
+		end,
+	}, {
+		__call = function(_self, ...)
+			return expectationContext:startExpectationChain(...)
+		end,
+	})
+end
+
+--[[
+	Runs the given TestPlan and returns a TestResults object representing the
+	results of the run.
+]]
+function TestRunner.runPlan(plan)
+	local session = TestSession.new(plan)
+	local lifecycleHooks = LifecycleHooks.new()
+
+	local exclusiveNodes = plan:findNodes(function(node)
+		return node.modifier == TestEnum.NodeModifier.Focus
+	end)
+
+	session.hasFocusNodes = #exclusiveNodes > 0
+
+	TestRunner.runPlanNode(session, plan, lifecycleHooks)
+
+	return session:finalize()
+end
+
+--[[
+	Run the given test plan node and its descendants, using the given test
+	session to store all of the results.
+]]
+function TestRunner.runPlanNode(session, planNode, lifecycleHooks)
+	local function runCallback(callback, messagePrefix)
+		local success = true
+		local errorMessage
+		-- Any code can check RUNNING_GLOBAL to fork behavior based on
+		-- whether a test is running. We use this to avoid accessing
+		-- protected APIs; it's a workaround that will go away someday.
+		_G[RUNNING_GLOBAL] = true
+
+		messagePrefix = messagePrefix or ""
+
+		local testEnvironment = getfenv(callback)
+
+		for key, value in pairs(TestRunner.environment) do
+			testEnvironment[key] = value
+		end
+
+		testEnvironment.fail = function(message)
+			if message == nil then
+				message = "fail() was called."
+			end
+
+			success = false
+			errorMessage = messagePrefix .. debug.traceback(tostring(message), 2)
+		end
+
+		testEnvironment.expect = wrapExpectContextWithPublicApi(session:getExpectationContext())
+
+		local context = session:getContext()
+
+		local nodeSuccess, nodeResult = xpcall(
+			function()
+				callback(context)
+			end,
+			function(message)
+				return messagePrefix .. debug.traceback(tostring(message), 2)
+			end
+		)
+
+		-- If a node threw an error, we prefer to use that message over
+		-- one created by fail() if it was set.
+		if not nodeSuccess then
+			success = false
+			errorMessage = nodeResult
+		end
+
+		_G[RUNNING_GLOBAL] = nil
+
+		return success, errorMessage
+	end
+
+	local function runNode(childPlanNode)
+		-- Errors can be set either via `error` propagating upwards or
+		-- by a test calling fail([message]).
+
+		for _, hook in ipairs(lifecycleHooks:getBeforeEachHooks()) do
+			local success, errorMessage = runCallback(hook, "beforeEach hook: ")
+			if not success then
+				return false, errorMessage
+			end
+		end
+
+		local testSuccess, testErrorMessage = runCallback(childPlanNode.callback)
+
+		for _, hook in ipairs(lifecycleHooks:getAfterEachHooks()) do
+			local success, errorMessage = runCallback(hook, "afterEach hook: ")
+			if not success then
+				if not testSuccess then
+					return false, testErrorMessage .. "\nWhile cleaning up the failed test another error was found:\n" .. errorMessage
+				end
+				return false, errorMessage
+			end
+		end
+
+		if not testSuccess then
+			return false, testErrorMessage
+		end
+
+		return true, nil
+	end
+
+	lifecycleHooks:pushHooksFrom(planNode)
+
+	local halt = false
+	for _, hook in ipairs(lifecycleHooks:getBeforeAllHooks()) do
+		local success, errorMessage = runCallback(hook, "beforeAll hook: ")
+		if not success then
+			session:addDummyError("beforeAll", errorMessage)
+			halt = true
+		end
+	end
+
+	if not halt then
+		for _, childPlanNode in ipairs(planNode.children) do
+			if childPlanNode.type == TestEnum.NodeType.It then
+				session:pushNode(childPlanNode)
+				if session:shouldSkip() then
+					session:setSkipped()
+				else
+					local success, errorMessage = runNode(childPlanNode)
+
+					if success then
+						session:setSuccess()
+					else
+						session:setError(errorMessage)
+					end
+				end
+				session:popNode()
+			elseif childPlanNode.type == TestEnum.NodeType.Describe then
+				session:pushNode(childPlanNode)
+				TestRunner.runPlanNode(session, childPlanNode, lifecycleHooks)
+
+				-- Did we have an error trying build a test plan?
+				if childPlanNode.loadError then
+					local message = "Error during planning: " .. childPlanNode.loadError
+					session:setError(message)
+				else
+					session:setStatusFromChildren()
+				end
+				session:popNode()
+			end
+		end
+	end
+
+	for _, hook in ipairs(lifecycleHooks:getAfterAllHooks()) do
+		local success, errorMessage = runCallback(hook, "afterAll hook: ")
+		if not success then
+			session:addDummyError("afterAll", errorMessage)
+		end
+	end
+
+	lifecycleHooks:popHooks()
+end
+
+return TestRunner
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="29">
+        <Properties>
+          <string name="Name">TestSession</string>
+          <string name="Source"><![CDATA[--[[
+	Represents the state relevant while executing a test plan.
+
+	Used by TestRunner to produce a TestResults object.
+
+	Uses the same tree building structure as TestPlanBuilder; TestSession keeps
+	track of a stack of nodes that represent the current path through the tree.
+]]
+
+local TestEnum = require(script.Parent.TestEnum)
+local TestResults = require(script.Parent.TestResults)
+local Context = require(script.Parent.Context)
+local ExpectationContext = require(script.Parent.ExpectationContext)
+
+local TestSession = {}
+
+TestSession.__index = TestSession
+
+--[[
+	Create a TestSession related to the given TestPlan.
+
+	The resulting TestResults object will be linked to this TestPlan.
+]]
+function TestSession.new(plan)
+	local self = {
+		results = TestResults.new(plan),
+		nodeStack = {},
+		contextStack = {},
+		expectationContextStack = {},
+		hasFocusNodes = false
+	}
+
+	setmetatable(self, TestSession)
+
+	return self
+end
+
+--[[
+	Calculate success, failure, and skipped test counts in the tree at the
+	current point in the execution.
+]]
+function TestSession:calculateTotals()
+	local results = self.results
+
+	results.successCount = 0
+	results.failureCount = 0
+	results.skippedCount = 0
+
+	results:visitAllNodes(function(node)
+		local status = node.status
+		local nodeType = node.planNode.type
+
+		if nodeType == TestEnum.NodeType.It then
+			if status == TestEnum.TestStatus.Success then
+				results.successCount = results.successCount + 1
+			elseif status == TestEnum.TestStatus.Failure then
+				results.failureCount = results.failureCount + 1
+			elseif status == TestEnum.TestStatus.Skipped then
+				results.skippedCount = results.skippedCount + 1
+			end
+		end
+	end)
+end
+
+--[[
+	Gathers all of the errors reported by tests and puts them at the top level
+	of the TestResults object.
+]]
+function TestSession:gatherErrors()
+	local results = self.results
+
+	results.errors = {}
+
+	results:visitAllNodes(function(node)
+		if #node.errors > 0 then
+			for _, message in ipairs(node.errors) do
+				table.insert(results.errors, message)
+			end
+		end
+	end)
+end
+
+--[[
+	Calculates test totals, verifies the tree is valid, and returns results.
+]]
+function TestSession:finalize()
+	if #self.nodeStack ~= 0 then
+		error("Cannot finalize TestResults with nodes still on the stack!", 2)
+	end
+
+	self:calculateTotals()
+	self:gatherErrors()
+
+	return self.results
+end
+
+--[[
+	Create a new test result node and push it onto the navigation stack.
+]]
+function TestSession:pushNode(planNode)
+	local node = TestResults.createNode(planNode)
+	local lastNode = self.nodeStack[#self.nodeStack] or self.results
+	table.insert(lastNode.children, node)
+	table.insert(self.nodeStack, node)
+
+	local lastContext = self.contextStack[#self.contextStack]
+	local context = Context.new(lastContext)
+	table.insert(self.contextStack, context)
+
+	local lastExpectationContext = self.expectationContextStack[#self.expectationContextStack]
+	local expectationContext = ExpectationContext.new(lastExpectationContext)
+	table.insert(self.expectationContextStack, expectationContext)
+end
+
+--[[
+	Pops a node off of the navigation stack.
+]]
+function TestSession:popNode()
+	assert(#self.nodeStack > 0, "Tried to pop from an empty node stack!")
+	table.remove(self.nodeStack, #self.nodeStack)
+	table.remove(self.contextStack, #self.contextStack)
+	table.remove(self.expectationContextStack, #self.expectationContextStack)
+end
+
+--[[
+	Gets the Context object for the current node.
+]]
+function TestSession:getContext()
+	assert(#self.contextStack > 0, "Tried to get context from an empty stack!")
+	return self.contextStack[#self.contextStack]
+end
+
+
+function TestSession:getExpectationContext()
+	assert(#self.expectationContextStack > 0, "Tried to get expectationContext from an empty stack!")
+	return self.expectationContextStack[#self.expectationContextStack]
+end
+
+--[[
+	Tells whether the current test we're in should be skipped.
+]]
+function TestSession:shouldSkip()
+	-- If our test tree had any exclusive tests, then normal tests are skipped!
+	if self.hasFocusNodes then
+		for i = #self.nodeStack, 1, -1 do
+			local node = self.nodeStack[i]
+
+			-- Skipped tests are still skipped
+			if node.planNode.modifier == TestEnum.NodeModifier.Skip then
+				return true
+			end
+
+			-- Focused tests are the only ones that aren't skipped
+			if node.planNode.modifier == TestEnum.NodeModifier.Focus then
+				return false
+			end
+		end
+
+		return true
+	else
+		for i = #self.nodeStack, 1, -1 do
+			local node = self.nodeStack[i]
+
+			if node.planNode.modifier == TestEnum.NodeModifier.Skip then
+				return true
+			end
+		end
+	end
+
+	return false
+end
+
+--[[
+	Set the current node's status to Success.
+]]
+function TestSession:setSuccess()
+	assert(#self.nodeStack > 0, "Attempting to set success status on empty stack")
+	self.nodeStack[#self.nodeStack].status = TestEnum.TestStatus.Success
+end
+
+--[[
+	Set the current node's status to Skipped.
+]]
+function TestSession:setSkipped()
+	assert(#self.nodeStack > 0, "Attempting to set skipped status on empty stack")
+	self.nodeStack[#self.nodeStack].status = TestEnum.TestStatus.Skipped
+end
+
+--[[
+	Set the current node's status to Failure and adds a message to its list of
+	errors.
+]]
+function TestSession:setError(message)
+	assert(#self.nodeStack > 0, "Attempting to set error status on empty stack")
+	local last = self.nodeStack[#self.nodeStack]
+	last.status = TestEnum.TestStatus.Failure
+	table.insert(last.errors, message)
+end
+
+--[[
+	Add a dummy child node to the current node to hold the given error. This
+	allows an otherwise empty describe node to report an error in a more natural
+	way.
+]]
+function TestSession:addDummyError(phrase, message)
+	self:pushNode({type = TestEnum.NodeType.It, phrase = phrase})
+	self:setError(message)
+	self:popNode()
+	self.nodeStack[#self.nodeStack].status = TestEnum.TestStatus.Failure
+end
+
+--[[
+	Set the current node's status based on that of its children. If all children
+	are skipped, mark it as skipped. If any are fails, mark it as failed.
+	Otherwise, mark it as success.
+]]
+function TestSession:setStatusFromChildren()
+	assert(#self.nodeStack > 0, "Attempting to set status from children on empty stack")
+
+	local last = self.nodeStack[#self.nodeStack]
+	local status = TestEnum.TestStatus.Success
+	local skipped = true
+
+	-- If all children were skipped, then we were skipped
+	-- If any child failed, then we failed!
+	for _, child in ipairs(last.children) do
+		if child.status ~= TestEnum.TestStatus.Skipped then
+			skipped = false
+
+			if child.status == TestEnum.TestStatus.Failure then
+				status = TestEnum.TestStatus.Failure
+			end
+		end
+	end
+
+	if skipped then
+		status = TestEnum.TestStatus.Skipped
+	end
+
+	last.status = status
+end
+
+return TestSession
+]]></string>
+        </Properties>
+      </Item>
+    </Item>
+  </Item>
+  <Item class="ServerScriptService" referent="30">
+    <Properties>
+      <string name="Name">ServerScriptService</string>
+    </Properties>
+    <Item class="Folder" referent="31">
+      <Properties>
+        <string name="Name">Tests</string>
+      </Properties>
+      <Item class="Script" referent="32">
+        <Properties>
+          <string name="Name">Helpfully</string>
+          <string name="Source">local TestEZ = require(game.ReplicatedStorage.TestEZ)
+
+local testLocations = {
+    game.ReplicatedStorage.Scripts,
+}
+
+local reporter = TestEZ.TextReporter
+ 
+TestEZ.TestBootstrap:run(testLocations, reporter)</string>
+        </Properties>
+      </Item>
+    </Item>
+  </Item>
+  <Item class="SoundService" referent="33">
+    <Properties>
+      <string name="Name">SoundService</string>
+      <bool name="RespectFilteringEnabled">true</bool>
+    </Properties>
+  </Item>
+  <Item class="Workspace" referent="34">
+    <Properties>
+      <string name="Name">Workspace</string>
+      <bool name="FilteringEnabled">true</bool>
+    </Properties>
+    <Item class="Part" referent="35">
+      <Properties>
+        <string name="Name">Baseplate</string>
+        <bool name="Anchored">true</bool>
+        <Color3uint8 name="Color3uint8">6446690</Color3uint8>
+        <bool name="Locked">true</bool>
+        <Vector3 name="Position">
+          <X>0</X>
+          <Y>-10</Y>
+          <Z>0</Z>
+        </Vector3>
+        <Vector3 name="size">
+          <X>512</X>
+          <Y>20</Y>
+          <Z>512</Z>
+        </Vector3>
+      </Properties>
+    </Item>
+  </Item>
+</roblox>
