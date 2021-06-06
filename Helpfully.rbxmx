@@ -1,38 +1,23 @@
 <roblox version="4">
-  <Item class="DataModel" referent="0">
+  <Item class="Folder" referent="0">
     <Properties>
-      <string name="Name">Helfpully</string>
+      <string name="Name">Helpfully</string>
     </Properties>
-    <Item class="Lighting" referent="1">
+    <Item class="ModuleScript" referent="1">
       <Properties>
-        <string name="Name">Lighting</string>
-        <Color3 name="Ambient">
-          <R>0</R>
-          <G>0</G>
-          <B>0</B>
-        </Color3>
-        <float name="Brightness">2</float>
-        <bool name="GlobalShadows">true</bool>
-        <bool name="Outlines">false</bool>
-        <token name="Technology">1</token>
+        <string name="Name">Helpfully</string>
+        <string name="Source">return {
+  debug = require(script:FindFirstChild('debug', false)),
+  functions = require(script:FindFirstChild('functions', false)),
+  Logger = require(script:FindFirstChild('Logger', false)),
+  paths = require(script:FindFirstChild('paths', false)),
+  tables = require(script:FindFirstChild('tables', false)),
+}</string>
       </Properties>
-    </Item>
-    <Item class="ReplicatedStorage" referent="2">
-      <Properties>
-        <string name="Name">ReplicatedStorage</string>
-      </Properties>
-      <Item class="Folder" referent="3">
+      <Item class="ModuleScript" referent="2">
         <Properties>
-          <string name="Name">Scripts</string>
-        </Properties>
-        <Item class="Folder" referent="4">
-          <Properties>
-            <string name="Name">Helpfully</string>
-          </Properties>
-          <Item class="ModuleScript" referent="5">
-            <Properties>
-              <string name="Name">Logger</string>
-              <string name="Source">local bind = require(script.Parent.functions).bind
+          <string name="Name">Logger</string>
+          <string name="Source">local bind = require(script.Parent.functions).bind
 local getRefLabel = require(script.Parent.debug).getRefLabel
 
 local LOG_LEVEL = {
@@ -77,7 +62,7 @@ end
 
 local function getLogPrefix(name, msgLevel)
   local prefix = PREFIX[msgLevel]
-  local prefix = prefix and ("[%s] "):format(prefix) or ''
+  prefix = prefix and ("[%s] "):format(prefix) or ''
   name = name and ("{%s}: "):format(name) or ''
 
   return prefix .. name
@@ -85,15 +70,15 @@ end
 
 local function noOp() end
 
-local function onLogError(logLevel, name, message)
+local function onLogError(_logLevel, name, message)
   error(string.format("%s%s", name or '', message or ''))
 end
 
-local function onLogPrint(logLevel, name, message)
+local function onLogPrint(_logLevel, name, message)
   print(string.format("%s%s", name or '', message or ''))
 end
 
-local function onLogWarn(logLevel, name, message)
+local function onLogWarn(_logLevel, name, message)
   warn(string.format("%s%s", name or '', message or ''))
 end
 
@@ -137,7 +122,7 @@ local function create(config)
         not onLogFn and getLogPrefix(name, LOG_LEVEL.CRITICAL) or name),
 
     debug = LOG_LEVEL.DEBUG &lt; level and noOp or
-      bind(nLogFn or onLogPrint, LOG_LEVEL.DEBUG,
+      bind(onLogFn or onLogPrint, LOG_LEVEL.DEBUG,
         not onLogFn and getLogPrefix(name, LOG_LEVEL.DEBUG) or name),
 
     error = LOG_LEVEL.ERROR &lt; level and noOp or
@@ -163,17 +148,20 @@ local function create(config)
     LOG_LEVEL = LOG_LEVEL,
   }
 
-  setmetatable(module, { __call = function(table, _) return create(_) end })
+  setmetatable(module, { __call = function(_table, _)
+    return create(_)
+  end })
+
   return module
 end
 
 return create()</string>
-            </Properties>
-          </Item>
-          <Item class="ModuleScript" referent="6">
-            <Properties>
-              <string name="Name">debug</string>
-              <string name="Source">local function getRefLabel(ref)
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="3">
+        <Properties>
+          <string name="Name">debug</string>
+          <string name="Source">local function getRefLabel(ref)
   local t = typeof(ref)
 
   if t == 'Instance' then
@@ -207,12 +195,12 @@ return {
   getRefLabel = getRefLabel,
   trimErrMsgLineNum = trimErrMsgLineNum,
 }</string>
-            </Properties>
-          </Item>
-          <Item class="ModuleScript" referent="7">
-            <Properties>
-              <string name="Name">functions</string>
-              <string name="Source">local getRefLabel = require(script.Parent.debug).getRefLabel
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="4">
+        <Properties>
+          <string name="Name">functions</string>
+          <string name="Source">local getRefLabel = require(script.Parent.debug).getRefLabel
 
 local function bind(fn, ...)
   if type(fn) ~= 'function' then
@@ -379,14 +367,13 @@ return {
   bindKeep = bindKeep,
   noOp = noOp,
 }</string>
-            </Properties>
-          </Item>
-          <Item class="ModuleScript" referent="8">
-            <Properties>
-              <string name="Name">paths</string>
-              <string name="Source">local debug = require(script.Parent.debug)
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="5">
+        <Properties>
+          <string name="Name">paths</string>
+          <string name="Source">local debug = require(script.Parent.debug)
 local getRefLabel = debug.getRefLabel
-local trimErrMsgLineNum = debug.trimErrMsgLineNum
 
 local function _separatedPath(path, separator)
   if path == nil then
@@ -410,7 +397,7 @@ local function _separatedPath(path, separator)
   local paths = (_path):split(separator)
   local _paths = {}
 
-  for i, subpath in pairs(paths) do
+  for _, subpath in pairs(paths) do
     if subpath ~= '' then
       if hasPercent then
         subpath = (subpath):gsub('\bs', separator)
@@ -476,9 +463,9 @@ local function _findByPath(path, separator)
 
   local serviceName = subpaths[1]:sub(2)
 
-  local instance = nil
-  status, instance = pcall(
-    function() return game:GetService(serviceName) end)
+  local _, instance = pcall(function()
+    return game:GetService(serviceName)
+  end)
 
   if typeof(instance) ~= 'Instance' then
     return nil, serviceName
@@ -612,14 +599,13 @@ return {
   findChildByPath = findChildByPath,
   separatedPath = separatedPath,
 }</string>
-            </Properties>
-          </Item>
-          <Item class="ModuleScript" referent="9">
-            <Properties>
-              <string name="Name">tables</string>
-              <string name="Source">local debug = require(script.Parent.debug)
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="6">
+        <Properties>
+          <string name="Name">tables</string>
+          <string name="Source">local debug = require(script.Parent.debug)
 local getRefLabel = debug.getRefLabel
-local trimErrMsgLineNum = debug.trimErrMsgLineNum
 
 local function assign(tbl, ...)
   if type(tbl) ~= 'table' then
@@ -669,38 +655,6 @@ return {
   assign = assign,
   augment = augment,
 }</string>
-            </Properties>
-          </Item>
-        </Item>
-      </Item>
-    </Item>
-    <Item class="SoundService" referent="10">
-      <Properties>
-        <string name="Name">SoundService</string>
-        <bool name="RespectFilteringEnabled">true</bool>
-      </Properties>
-    </Item>
-    <Item class="Workspace" referent="11">
-      <Properties>
-        <string name="Name">Workspace</string>
-        <bool name="FilteringEnabled">true</bool>
-      </Properties>
-      <Item class="Part" referent="12">
-        <Properties>
-          <string name="Name">Baseplate</string>
-          <bool name="Anchored">true</bool>
-          <Color3uint8 name="Color3uint8">6446690</Color3uint8>
-          <bool name="Locked">true</bool>
-          <Vector3 name="Position">
-            <X>0</X>
-            <Y>-10</Y>
-            <Z>0</Z>
-          </Vector3>
-          <Vector3 name="size">
-            <X>512</X>
-            <Y>20</Y>
-            <Z>512</Z>
-          </Vector3>
         </Properties>
       </Item>
     </Item>

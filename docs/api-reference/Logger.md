@@ -7,7 +7,7 @@
 Invoking `require` upon the module `Helpfully.Logger` will return a `Logger`
 configured with default behavior.
 
-[`Logger()`](#function-logger) can be invoked to create a `Logger` with
+[`Logger()`][function-logger] can be invoked to create a `Logger` with
 customized behavior.
 
 <figure><figcaption><em>Example: require</em></figcaption></figure>
@@ -42,19 +42,19 @@ behavior.</td></tr>
 <tr><th>Function Name</th><th>Description</th></tr>
 </thead>
 <tbody>
-<tr><td><a href='#logging'>critical</a></td>
+<tr><td><a href='#logging-functions'>critical</a></td>
 <td>Logs messages for events with critical severity.</td></tr>
-<tr><td><a href='#logging'>debug</a></td>
+<tr><td><a href='#logging-functions'>debug</a></td>
 <td>Logs messages for events with debug severity.</td></tr>
-<tr><td><a href='#logging'>error</a></td>
+<tr><td><a href='#logging-functions'>error</a></td>
 <td>Logs messages for events with error severity.</td></tr>
-<tr><td><a href='#logging'>fatal</a></td>
+<tr><td><a href='#logging-functions'>fatal</a></td>
 <td>Logs messages for events with fatal severity.</td></tr>
-<tr><td><a href='#logging'>info</a></td>
+<tr><td><a href='#logging-functions'>info</a></td>
 <td>Logs messages for events with info severity.</td></tr>
-<tr><td><a href='#logging'>verbose</a></td>
+<tr><td><a href='#logging-functions'>verbose</a></td>
 <td>Logs messages for events with verbose severity.</td></tr>
-<tr><td><a href='#logging'>warn</a></td>
+<tr><td><a href='#logging-functions'>warn</a></td>
 <td>Logs messages for events with warn severity.</td></tr>
 </tbody></table>
 
@@ -106,7 +106,7 @@ Logger Logger([table config])
   <th>Name</th><th>Type</th><th>Synopsis</th></tr>
 </thead>
 <tbody>
-<tr><td>config</td><td>[table]</td>
+<tr><td>config</td><td><code>table</code> (optional)</td>
 <td>An optional <code>table</code> containing configuration properties to
 define the behavior of the <code>Logger</code> to be created and
 returned.  If not specified, a <code>Logger</code> with default behavior will
@@ -122,13 +122,14 @@ be returned.</td></tr>
   <th>Name</th><th>Type</th><th>Synopsis</th></tr>
 </thead>
 <tbody>
-<tr><td>level</td><td>[number or string]</td>
+<tr><td>level</td><td><code>number</code> or <code>string</code>
+(optional)</td>
 <td>An optional minimum severity of events to log.  Logging functions with a
 lower <a href="#enumeration-log_level">severity level</a> than this will be
 ignored when invoked.  Defaults to <code>LOG_LEVEL.ALL</code>.</td></tr>
-<tr><td>name</td><td>[string]</td>
+<tr><td>name</td><td><code>string</code> (optional)</td>
 <td>An optional name to report to logging functions.</td></tr>
-<tr><td>onLogFn</td><td>[function]</td>
+<tr><td>onLogFn</td><td><code>function</code> (optional)</td>
 <td>An optional custom <a href="#log-handler">log handler</a> to invoke when
 logging functions are invoked.  If not specified, defaults to the
 <a href="#logging-function-defaults">default log handlers</a>.</td></tr>
@@ -143,7 +144,7 @@ logging functions are invoked.  If not specified, defaults to the
   <th>Type(s)</th><th>Synopsis</th></tr>
 </thead>
 <tbody>
-<tr><td>Logger</td>
+<tr><td><code>Logger</code></td>
 <td>The <code>Logger</code> configured according to the specified
 <code>config</code>.</td></tr>
 </tbody>
@@ -155,15 +156,16 @@ None.
 
 ##### Errors
 
-`Logger()` throws an error if `config` is present but is not a `table`.
+`Logger()` will throw an error if `config` is present but is not a `table`.
 
-`Logger()` throws an error if `config.name` is present but is not a `string`.
+`Logger()` will throw an error if `config.name` is present but is not a
+`string`.
 
-`Logger()` throws an error if `config.level` is present but is not a `number`,
-or is a `string` but does not equal the name of a
-[log level](#enumeration-log_level).
+`Logger()` will throw an error if `config.level` is present but is not a
+`number`, or is a `string` but does not equal the name of a
+[log level][enumeration-log_level].
 
-`Logger()` throws an error if `config.onLogFn` is present but is not a
+`Logger()` will throw an error if `config.onLogFn` is present but is not a
 `function`.
 
 ##### Caveats
@@ -208,15 +210,14 @@ print(errorCount) -- 2
 
 ## Logging
 
-Executes the user-specified [log handler](#log-handler), or an appropriate
-[default log handler](#logging-function-defaults) if one has not been
-[configured](#function-logger).
+Executes the user-specified [log handler][log-handler], or an appropriate
+[default log handler][logging-function-defaults] if one has not been
+[configured][config-properties].
 
-Each of the [logging functions](#logging-functions) (`critical`, `debug`,
+Each of the [logging functions][logging-functions] (`critical`, `debug`,
 `error`, `fatal`, `info`, `verbose`, and `warn`) has the same function
 signature and behavior, and varies only in the severity level it reports, and
-the [default log handler](#logging-function-defaults) it uses if one has not
-been [configured](#function-logger).
+the default log handler it uses if one has not been configured.
 
 ### Logging Functions
 
@@ -246,13 +247,13 @@ maintain compatibility with function signatures.<span>
 ##### Signature
 
 ```lua
-[variant...] critical([variant... args])
-[variant...] debug([variant... args])
-[variant...] error([variant... args])
-[variant...] fatal([variant... args])
-[variant...] info([variant... args])
-[variant...] verbose([variant... args])
-[variant...] warn([variant... args])
+[Variant...] critical([Variant... args])
+[Variant...] debug([Variant... args])
+[Variant...] error([Variant... args])
+[Variant...] fatal([Variant... args])
+[Variant...] info([Variant... args])
+[Variant...] verbose([Variant... args])
+[Variant...] warn([Variant... args])
 ```
 
 ##### Parameters
@@ -263,7 +264,7 @@ maintain compatibility with function signatures.<span>
   <th>Name</th><th>Type</th><th>Synopsis</th></tr>
 </thead>
 <tbody>
-<tr><td>args</td><td>[variant...]</td>
+<tr><td>args</td><td><code>Variant...</code> (optional)</td>
 <td>Zero or more arguments to pass to the
 <a href="#log-handler">log handler</a>.</td></tr>
 </tbody>
@@ -277,7 +278,7 @@ maintain compatibility with function signatures.<span>
   <th>Type(s)</th><th>Synopsis</th></tr>
 </thead>
 <tbody>
-<tr><td>[variant...]</td>
+<tr><td><code>Variant...</code> (optional)</td>
 <td>Zero or more return values, returned from the
 <a href="#log-handler">log handler</a>.</td></tr>
 </tbody>
@@ -285,26 +286,25 @@ maintain compatibility with function signatures.<span>
 
 ##### Side-Effects
 
-When invoked, each [logging function](#logging-functions) will in turn invoke
-a [log handler](#log-handler), if the [log level](#enumeration-log_level)
+When invoked, each [logging function][logging-functions] will in turn invoke
+a [log handler][log-handler], if the [log level][enumeration-log_level]
 corresponding to the logging function is equal to or greater than the
-threshold log level specified when [configuring the logger](#function-logger).
-Thus, if a logger is configured with the threshold log level `ERROR`, logging
-functions with lower severity (`warn`, `info`, `verbose`, and `debug`) will be
-ignored.
+threshold log level specified when
+[configuring the logger][config-properties].  Thus, if a logger is configured
+with the threshold log level `ERROR`, logging functions with lower severity
+(`warn`, `info`, `verbose`, and `debug`) will be ignored.
 
-The [log handler](#log-handler) that any
-[logging function](#logging-functions) invokes will have been specified when
-[configuring the logger](#function-logger).  If no custom log handler was
-specified, the [default log handler](#logging-function-defaults) corresponding
+The log handler that any logging function invokes will have been specified
+when configuring the logger.  If no custom log handler was
+specified, the [default log handler][logging-function-defaults] corresponding
 to the log level of the logging function will be used.
 
-[Log handlers](#log-handler) are invoked with the
-[function signature for log handlers](#signature_2).
+Log handlers are invoked with the
+[function signature for log handlers][log-handler-signature].
 
 ##### Errors
 
-Errors that occur within a custom [log handler](#log-handler) are thrown.  To
+Errors that occur within a custom [log handler][log-handler] are thrown.  To
 prevent custom log handlers from throwing errors, wrap their internal logic
 with `pcall` or `xpcall`.
 
@@ -327,13 +327,13 @@ Logger.error("Ooops") -- error("[ERROR] Ooops")
 ### Log Handler
 
 An optional, custom log handler can be specified when
-[configuring the logger](#function-logger), to process custom logging logic
-whenever a [logging function](#logging-functions) is invoked. 
+[configuring the logger][config-properties], to process custom logging logic
+whenever a [logging function][logging-functions] is invoked. 
 
 ##### Signature
 
 ```lua
-[variant...] function(number logLevel, string name, [variant... args])
+[Variant...] function(number logLevel, string name, [Variant... args])
 ```
 
 ##### Parameters
@@ -344,15 +344,15 @@ whenever a [logging function](#logging-functions) is invoked.
   <th>Name</th><th>Type</th><th>Synopsis</th></tr>
 </thead>
 <tbody>
-<tr><td>logLevel</td><td>number</td>
+<tr><td>logLevel</td><td><code>number</code></td>
 <td>The <a href="#enumeration-log_level">log level</a> that corresponds to the
 severity of the <a href="#logging-functions">logging function</a> that invoked
 this log handler.</td></tr>
-<tr><td>name</td><td>string</td>
+<tr><td>name</td><td><code>string</code></td>
 <td>The <code>name</code> parameter specified during
 <a href="#function-logger">configuration of the logger</a>, or
 <code>nil</code> if none was specified.</td></tr>
-<tr><td>args</td><td>[variant...]</td>
+<tr><td>args</td><td><code>Variant...</code> (optional)</td>
 <td>Zero or more arguments that were passed to the
 <a href="#logging-functions">logging function</a> that invoked this log
 handler.</td></tr>
@@ -367,7 +367,7 @@ handler.</td></tr>
   <th>Type(s)</th><th>Synopsis</th></tr>
 </thead>
 <tbody>
-<tr><td>[variant...]</td>
+<tr><td><code>Variant...</code> (optional)</td>
 <td>Zero or more return values.</td></tr>
 </tbody>
 </table>
@@ -377,7 +377,7 @@ handler.</td></tr>
 All side effects from custom log handlers are programmed by the developers of
 the log handlers.
 
-The [default log handlers](#logging-function-defaults) `print`, `warn`, and
+The [default log handlers][logging-function-defaults] `print`, `warn`, and
 `error` each have side effects defined by those built-in functions.
 
 ##### Errors
@@ -385,7 +385,7 @@ The [default log handlers](#logging-function-defaults) `print`, `warn`, and
 All errors thrown from custom log handlers are programmed by the developers of
 the log handlers.
 
-The [default log handler](#logging-function-defaults) for logging functions of
+The [default log handler][logging-function-defaults] for logging functions of
 severity `critical`, `error`, and `fatal` is the built-in Lua function
 `error`, which naturally causes an error to be thrown.
 
@@ -424,7 +424,26 @@ print(errorCount) -- 2
 
 ## Learn More
 
-Read the [API Reference](./index.md) to learn about Helpfully modules.
+Read the [API Reference][] to learn about Helpfully modules.
 
-Read the [Installation](../installation.md) instructions to learn how to make
-Helpfully available within your projects.
+Read the [Installation][] instructions to learn how to make Resourceful
+available within your projects.
+
+[config-properties]: #config-properties "config Properties"
+
+[enumeration-log_level]: #enumeration-log_level "Enumeration: LOG_LEVEL"
+
+[function-logger]: #function-logger "Function: Logger()"
+
+[log-handler]: #log-handler "Log Handler"
+
+[log-handler-signature]: #signature_2 "Log Handler: Signature"
+
+[logging-functions]: #logging-functions "Logging Functions"
+
+[logging-function-defaults]: #logging-function-defaults
+  "Logging Function Defaults"
+
+[API Reference]: ./index.md "API Reference"
+
+[Installation]: ../installation.md "Installation"

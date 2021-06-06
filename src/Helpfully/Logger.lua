@@ -43,7 +43,7 @@ end
 
 local function getLogPrefix(name, msgLevel)
   local prefix = PREFIX[msgLevel]
-  local prefix = prefix and ("[%s] "):format(prefix) or ''
+  prefix = prefix and ("[%s] "):format(prefix) or ''
   name = name and ("{%s}: "):format(name) or ''
 
   return prefix .. name
@@ -51,15 +51,15 @@ end
 
 local function noOp() end
 
-local function onLogError(logLevel, name, message)
+local function onLogError(_logLevel, name, message)
   error(string.format("%s%s", name or '', message or ''))
 end
 
-local function onLogPrint(logLevel, name, message)
+local function onLogPrint(_logLevel, name, message)
   print(string.format("%s%s", name or '', message or ''))
 end
 
-local function onLogWarn(logLevel, name, message)
+local function onLogWarn(_logLevel, name, message)
   warn(string.format("%s%s", name or '', message or ''))
 end
 
@@ -103,7 +103,7 @@ local function create(config)
         not onLogFn and getLogPrefix(name, LOG_LEVEL.CRITICAL) or name),
 
     debug = LOG_LEVEL.DEBUG < level and noOp or
-      bind(nLogFn or onLogPrint, LOG_LEVEL.DEBUG,
+      bind(onLogFn or onLogPrint, LOG_LEVEL.DEBUG,
         not onLogFn and getLogPrefix(name, LOG_LEVEL.DEBUG) or name),
 
     error = LOG_LEVEL.ERROR < level and noOp or
@@ -129,7 +129,10 @@ local function create(config)
     LOG_LEVEL = LOG_LEVEL,
   }
 
-  setmetatable(module, { __call = function(table, _) return create(_) end })
+  setmetatable(module, { __call = function(_table, _)
+    return create(_)
+  end })
+
   return module
 end
 

@@ -1,3 +1,6 @@
+.md-typeset a:hover {
+  text-decoration: underline;
+}
 .md-typeset figcaption {
   margin: 0;
   padding: 2pt 10pt;
@@ -39,6 +42,12 @@
   border-color: var(--md-code-bg-color);
   border-color: lightgrey;
   border-collapse: collapse;
+}
+.md-typeset table tr:hover td {
+  background-color: #f0f2ff;
+}
+.md-typeset table tr:hover td code {
+  background-color: #d5d9f5;
 }
 .md-typeset__table {
   width: 100%;

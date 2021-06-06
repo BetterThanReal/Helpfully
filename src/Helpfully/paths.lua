@@ -1,6 +1,5 @@
 local debug = require(script.Parent.debug)
 local getRefLabel = debug.getRefLabel
-local trimErrMsgLineNum = debug.trimErrMsgLineNum
 
 local function _separatedPath(path, separator)
   if path == nil then
@@ -24,7 +23,7 @@ local function _separatedPath(path, separator)
   local paths = (_path):split(separator)
   local _paths = {}
 
-  for i, subpath in pairs(paths) do
+  for _, subpath in pairs(paths) do
     if subpath ~= '' then
       if hasPercent then
         subpath = (subpath):gsub('\bs', separator)
@@ -90,9 +89,9 @@ local function _findByPath(path, separator)
 
   local serviceName = subpaths[1]:sub(2)
 
-  local instance = nil
-  status, instance = pcall(
-    function() return game:GetService(serviceName) end)
+  local _, instance = pcall(function()
+    return game:GetService(serviceName)
+  end)
 
   if typeof(instance) ~= 'Instance' then
     return nil, serviceName

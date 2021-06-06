@@ -1,6 +1,5 @@
 local debug = require(script.Parent.debug)
 local getRefLabel = debug.getRefLabel
-local trimErrMsgLineNum = debug.trimErrMsgLineNum
 
 local function assign(tbl, ...)
   if type(tbl) ~= 'table' then

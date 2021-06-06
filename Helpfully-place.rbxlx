@@ -21,9 +21,16 @@
       <Properties>
         <string name="Name">Scripts</string>
       </Properties>
-      <Item class="Folder" referent="3">
+      <Item class="ModuleScript" referent="3">
         <Properties>
           <string name="Name">Helpfully</string>
+          <string name="Source">return {
+  debug = require(script:FindFirstChild('debug', false)),
+  functions = require(script:FindFirstChild('functions', false)),
+  Logger = require(script:FindFirstChild('Logger', false)),
+  paths = require(script:FindFirstChild('paths', false)),
+  tables = require(script:FindFirstChild('tables', false)),
+}</string>
         </Properties>
         <Item class="ModuleScript" referent="4">
           <Properties>
@@ -73,7 +80,7 @@ end
 
 local function getLogPrefix(name, msgLevel)
   local prefix = PREFIX[msgLevel]
-  local prefix = prefix and ("[%s] "):format(prefix) or ''
+  prefix = prefix and ("[%s] "):format(prefix) or ''
   name = name and ("{%s}: "):format(name) or ''
 
   return prefix .. name
@@ -81,15 +88,15 @@ end
 
 local function noOp() end
 
-local function onLogError(logLevel, name, message)
+local function onLogError(_logLevel, name, message)
   error(string.format("%s%s", name or '', message or ''))
 end
 
-local function onLogPrint(logLevel, name, message)
+local function onLogPrint(_logLevel, name, message)
   print(string.format("%s%s", name or '', message or ''))
 end
 
-local function onLogWarn(logLevel, name, message)
+local function onLogWarn(_logLevel, name, message)
   warn(string.format("%s%s", name or '', message or ''))
 end
 
@@ -133,7 +140,7 @@ local function create(config)
         not onLogFn and getLogPrefix(name, LOG_LEVEL.CRITICAL) or name),
 
     debug = LOG_LEVEL.DEBUG &lt; level and noOp or
-      bind(nLogFn or onLogPrint, LOG_LEVEL.DEBUG,
+      bind(onLogFn or onLogPrint, LOG_LEVEL.DEBUG,
         not onLogFn and getLogPrefix(name, LOG_LEVEL.DEBUG) or name),
 
     error = LOG_LEVEL.ERROR &lt; level and noOp or
@@ -159,7 +166,10 @@ local function create(config)
     LOG_LEVEL = LOG_LEVEL,
   }
 
-  setmetatable(module, { __call = function(table, _) return create(_) end })
+  setmetatable(module, { __call = function(_table, _)
+    return create(_)
+  end })
+
   return module
 end
 
@@ -382,7 +392,6 @@ return {
             <string name="Name">paths</string>
             <string name="Source">local debug = require(script.Parent.debug)
 local getRefLabel = debug.getRefLabel
-local trimErrMsgLineNum = debug.trimErrMsgLineNum
 
 local function _separatedPath(path, separator)
   if path == nil then
@@ -406,7 +415,7 @@ local function _separatedPath(path, separator)
   local paths = (_path):split(separator)
   local _paths = {}
 
-  for i, subpath in pairs(paths) do
+  for _, subpath in pairs(paths) do
     if subpath ~= '' then
       if hasPercent then
         subpath = (subpath):gsub('\bs', separator)
@@ -472,9 +481,9 @@ local function _findByPath(path, separator)
 
   local serviceName = subpaths[1]:sub(2)
 
-  local instance = nil
-  status, instance = pcall(
-    function() return game:GetService(serviceName) end)
+  local _, instance = pcall(function()
+    return game:GetService(serviceName)
+  end)
 
   if typeof(instance) ~= 'Instance' then
     return nil, serviceName
@@ -615,7 +624,6 @@ return {
             <string name="Name">tables</string>
             <string name="Source">local debug = require(script.Parent.debug)
 local getRefLabel = debug.getRefLabel
-local trimErrMsgLineNum = debug.trimErrMsgLineNum
 
 local function assign(tbl, ...)
   if type(tbl) ~= 'table' then

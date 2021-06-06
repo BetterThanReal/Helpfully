@@ -30,7 +30,7 @@ specified arguments.
 ##### Signature
 
 ```lua
-function bind(function fn, [variant... args])
+function bind(function fn, [Variant... args])
 ```
 
 ##### Parameters
@@ -41,10 +41,10 @@ function bind(function fn, [variant... args])
   <th>Name</th><th>Type</th><th>Synopsis</th></tr>
 </thead>
 <tbody>
-<tr><td>fn</td><td>function</td>
+<tr><td>fn</td><td><code>function</code></td>
 <td>A new bound <code>function</code> that invokes <code>fn</code> with
 <code>args</code>.</td></tr>
-<tr><td>args</td><td>[variant...]</td>
+<tr><td>args</td><td><code>Variant...</code> (optional)</td>
 <td>Zero or more arguments to pass to <code>fn</code> when invoking it.
 </td></tr>
 </tbody>
@@ -58,7 +58,7 @@ function bind(function fn, [variant... args])
   <th>Type(s)</th><th>Synopsis</th></tr>
 </thead>
 <tbody>
-<tr><td>function</td>
+<tr><td><code>function</code></td>
 <td>The function bound to <code>fn</code>.</td></tr>
 </tbody>
 </table>
@@ -69,7 +69,7 @@ None.
 
 ##### Errors
 
-`bind` throws an error if `fn` is missing or is not a `function`.
+`bind` will throw an error if `fn` is missing or is not a `function`.
 
 ##### Caveats
 
@@ -115,7 +115,7 @@ the bound function.
 ##### Signature
 
 ```lua
-function bindDrop(number n, function fn, [variant... args])
+function bindDrop(number n, function fn, [Variant... args])
 ```
 
 ##### Parameters
@@ -126,15 +126,15 @@ function bindDrop(number n, function fn, [variant... args])
   <th>Name</th><th>Type</th><th>Synopsis</th></tr>
 </thead>
 <tbody>
-<tr><td>n</td><td>number</td>
+<tr><td>n</td><td><code>number</code></td>
 <td><p>The number of return values to remove from the function bound to
 <code>fn</code>.</p>
 <p>When positive or <code>0</code>, removes the first <code>n</code> values
 from the beginning of the bound function's return values.</p></td></tr>
-<tr><td>fn</td><td>function</td>
+<tr><td>fn</td><td><code>function</code></td>
 <td>A new <code>function</code> that invokes <code>fn</code> with
 <code>args</code>.</td></tr>
-<tr><td>args</td><td>[variant...]</td>
+<tr><td>args</td><td><code>Variant...</code> (optional)</td>
 <td>Zero or more arguments to pass to <code>fn</code> when invoking it.
 </td></tr>
 </tbody>
@@ -148,7 +148,7 @@ from the beginning of the bound function's return values.</p></td></tr>
   <th>Type(s)</th><th>Synopsis</th></tr>
 </thead>
 <tbody>
-<tr><td>function</td>
+<tr><td><code>function</code></td>
 <td>The function bound to <code>fn</code>.</td></tr>
 </tbody>
 </table>
@@ -159,9 +159,9 @@ None.
 
 ##### Errors
 
-`bindDrop` throws an error if `n` is less than `0`.
+`bindDrop` will throw an error if `n` is less than `0`.
 
-`bindDrop` throws an error if `fn` is missing or is not a `function`.
+`bindDrop` will throw an error if `fn` is missing or is not a `function`.
 
 ##### Caveats
 
@@ -214,7 +214,7 @@ the bound function.
 ##### Signature
 
 ```lua
-function bindKeep(number n, function fn, [variant... args])
+function bindKeep(number n, function fn, [Variant... args])
 ```
 
 ##### Parameters
@@ -225,7 +225,7 @@ function bindKeep(number n, function fn, [variant... args])
   <th>Name</th><th>Type</th><th>Synopsis</th></tr>
 </thead>
 <tbody>
-<tr><td>n</td><td>number</td>
+<tr><td>n</td><td><code>number</code></td>
 <td><p>The number of return values to keep from the function bound to
 <code>fn</code>.</p>
 <p>When positive or <code>0</code>, keeps only the first <code>n</code> values
@@ -235,10 +235,10 @@ the end of the bound function's return values.</p>
 <p>When <code>n</code> or <code>math.abs(n)</code> is greater than the number
 of arguments received by the bound function, keeps all return values.</p>
 </td></tr>
-<tr><td>fn</td><td>function</td>
+<tr><td>fn</td><td><code>function</code></td>
 <td>A new <code>function</code> that invokes <code>fn</code> with
 <code>args</code>.</td></tr>
-<tr><td>args</td><td>[variant...]</td>
+<tr><td>args</td><td><code>Variant...</code> (optional)</td>
 <td>Zero or more arguments to pass to <code>fn</code> when invoking it.
 </td></tr>
 </tbody>
@@ -252,7 +252,7 @@ of arguments received by the bound function, keeps all return values.</p>
   <th>Type(s)</th><th>Synopsis</th></tr>
 </thead>
 <tbody>
-<tr><td>function</td>
+<tr><td><code>function</code></td>
 <td>The function bound to <code>fn</code>.</td></tr>
 </tbody>
 </table>
@@ -263,7 +263,7 @@ None.
 
 ##### Errors
 
-`bindKeep` throws an error if `fn` is missing or is not a `function`.
+`bindKeep` will throw an error if `fn` is missing or is not a `function`.
 
 ##### Caveats
 
@@ -348,7 +348,11 @@ print(noOp()) -- Prints nothing.
 
 ## Learn More
 
-Read the [API Reference](./index.md) to learn about Helpfully modules.
+Read the [API Reference][] to learn about Helpfully modules.
 
-Read the [Installation](../installation.md) instructions to learn how to make
-Helpfully available within your projects.
+Read the [Installation][] instructions to learn how to make Resourceful
+available within your projects.
+
+[API Reference]: ./index.md "API Reference"
+
+[Installation]: ../installation.md "Installation"

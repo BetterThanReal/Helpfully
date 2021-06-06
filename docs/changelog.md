@@ -1,9 +1,24 @@
 # Helpfully: Changelog
 
+## [1.0.1](https://github.com/BetterThanReal/Helpfully/releases/tag/1.0.1) (2021-06-06)
+
+##### Added
+- `Helpfully` is now a `ModuleScript` that returns all child modules
+- New version of `default.project.json` which outputs a `Folder` instead of `DataModel`
+- Selene configuration file for linting
+- Basic VSCode Workspace
+
+##### Changed
+- Renamed `default.project.json` to `place.project.json`
+- Renamed `Helpfully.rbxlx` to `Helpfully-place.rbxlx`
+- Renamed `test.project.json` to `tests.project.json`
+- Renamed `test.rbxlx` to `Helpfully-tests.rbxlx`
+- Updated documentation
+
 ## [1.0.0](https://github.com/BetterThanReal/Helpfully/releases/tag/1.0.0) (2021-05-25)
 Initial release.
 
-#### Added
+##### Added
 - Everything.  Hello, world!
 
 ---

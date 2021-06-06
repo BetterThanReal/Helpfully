@@ -42,7 +42,7 @@ Instance findByPath([string path], [string separator])
   <th>Name</th><th>Type</th><th>Synopsis</th></tr>
 </thead>
 <tbody>
-<tr><td>path</td><td>[string]</td>
+<tr><td>path</td><td><code>string</code> (optional)</td>
 <td><p>The location within the Roblox project tree hierarchy, relative to the
 project root, at which to find and return the corresponding
 <code>Instance</code>.</p>
@@ -55,7 +55,7 @@ character that follows to be interpreted literally instead of as a path
 separator.  This is useful if any <code>Instance</code> within the Roblox
 project tree hierarchy has a name that contains <code>separator</code>.</p>
 </td></tr>
-<tr><td>separator</td><td>[string]</td>
+<tr><td>separator</td><td><code>string</code> (optional)</td>
 <td><p>An optional one-character <code>string</code> delimiter by which
 <code>path</code> will be separated.  Defaults to "<code>.</code>" (period).
 </p>
@@ -74,12 +74,11 @@ as escape sequences, but instead will be treated as path separators.</p>
   <th>Type(s)</th><th>Synopsis</th></tr>
 </thead>
 <tbody>
-<tr><td>Instance</td>
-<td>The <code>Instance</code> corresponding to <code>path</code>.</td></tr>
-<tr><td>nil, string</td>
-<td>If the specified <code>Instance</code> could not be found, this function
+<tr><td><code>Instance</code> or <code>nil</code>, <code>string</code></td>
+<td><p>The <code>Instance</code> corresponding to <code>path</code>.</p>
+<p>If the specified <code>Instance</code> could not be found, this function
 returns a list containing <code>nil</code> and the <code>string</code> path
-component name that could not be found.</td></tr>
+component name that could not be found.</p></td></tr>
 </tbody>
 </table>
 
@@ -89,11 +88,11 @@ None.
 
 ##### Errors
 
-`findByPath` throws an error if `path` is specified but is not a `string`, or
-contains "`\b`" (bell character), or begins with a character other than the
+`findByPath` will throw an error if `path` is specified but is not a `string`,
+or contains "`\b`" (bell character), or begins with a character other than the
 colon character `:`, which represents the name of a service.
 
-`findByPath` throws an error if `separator` is specified but is not a
+`findByPath` will throw an error if `separator` is specified but is not a
 single-character `string`, or is "`\b`" (bell character).
 
 ##### Caveats
@@ -137,10 +136,10 @@ Instance findChildByPath(Instance instance, [string path], [string separator])
   <th>Name</th><th>Type</th><th>Synopsis</th></tr>
 </thead>
 <tbody>
-<tr><td>instance</td><td>Instance</td>
+<tr><td>instance</td><td><code>Instance</code></td>
 <td><p>The <code>Instance</code> from which <code>path</code> will be
 relative.</p>
-<tr><td>path</td><td>[string]</td>
+<tr><td>path</td><td><code>string</code> (optional)</td>
 <td><p>The location within the Roblox project tree hierarchy, relative to
 <code>instance</code>, at which to find and return the corresponding
 <code>Instance</code>.</p>
@@ -155,7 +154,7 @@ character that follows to be interpreted literally instead of as a path
 separator.  This is useful if any <code>Instance</code> within the Roblox
 project tree hierarchy has a name that contains <code>separator</code>.</p>
 </td></tr>
-<tr><td>separator</td><td>[string]</td>
+<tr><td>separator</td><td><code>string</code> (optional)</td>
 <td><p>A one-character <code>string</code> delimiter by which <code>path</code>
 will be separated.  Defaults to "<code>.</code>" (period).</p>
 <p>If specified to be the percent character "<code>%</code>", percent
@@ -173,7 +172,7 @@ as escape sequences, but instead will be treated as path separators.</p>
   <th>Type(s)</th><th>Synopsis</th></tr>
 </thead>
 <tbody>
-<tr><td>Instance</td>
+<tr><td><code>Instance</code></td>
 <td>The <code>Instance</code> corresponding to <code>path</code>.</td></tr>
 <tr><td>nil, string</td>
 <td>If the specified <code>Instance</code> could not be found, this function
@@ -188,13 +187,13 @@ None.
 
 ##### Errors
 
-`findChildByPath` throws an error if `instance` is missing or is not an
+`findChildByPath` will throw an error if `instance` is missing or is not an
 `Instance`.
 
-`findChildByPath` throws an error if `path` is specified but is not a
+`findChildByPath` will throw an error if `path` is specified but is not a
 `string`, or contains "`\b`" (bell character).
 
-`findChildByPath` throws an error if `separator` is specified but is not a
+`findChildByPath` will throw an error if `separator` is specified but is not a
 single-character `string`, or is "`\b`" (bell character).
 
 ##### Caveats
@@ -244,7 +243,7 @@ table separatedPath([string path], [string separator])
   <th>Name</th><th>Type</th><th>Synopsis</th></tr>
 </thead>
 <tbody>
-<tr><td>path</td><td>[string]</td>
+<tr><td>path</td><td><code>string</code> (optional)</td>
 <td><p>The <code>string</code> path to separate by <code>separator</code>.</p>
 <p>If missing or empty, <code>{}</code> will be returned.</p>
 <p>Each percent character "<code>%</code>" that appears within
@@ -252,7 +251,7 @@ table separatedPath([string path], [string separator])
 character that follows to be interpreted literally instead of as a path
 separator.</p>
 </td></tr>
-<tr><td>separator</td><td>[string]</td>
+<tr><td>separator</td><td><code>string</code> (optional)</td>
 <td><p>A one-character <code>string</code> delimiter by which <code>path</code>
 will be separated.  Defaults to "<code>.</code>" (period).</p>
 <p>If specified to be the percent character "<code>%</code>", percent
@@ -270,7 +269,7 @@ as escape sequences, but instead will be treated as path separators.</p>
   <th>Type(s)</th><th>Synopsis</th></tr>
 </thead>
 <tbody>
-<tr><td>table</td>
+<tr><td><code>table</code></td>
 <td>The array of path components derived from <code>path</code>, separated
 according the <code>separator</code>.  Empty path elements are omitted.
 </td></tr>
@@ -283,10 +282,10 @@ None.
 
 ##### Errors
 
-`separatedPath` throws an error if `path` is specified but is not a `string`,
-or contains "`\b`" (bell character).
+`separatedPath` will throw an error if `path` is specified but is not a
+`string`, or contains "`\b`" (bell character).
 
-`separatedPath` throws an error if `separator` is specified but is not a
+`separatedPath` will throw an error if `separator` is specified but is not a
 single-character `string`, or is "`\b`" (bell character).
 
 ##### Caveats
@@ -315,7 +314,11 @@ print(table.concat(path, "/")) -- :ReplicatedStorage/Scripts.MyLib
 ```
 ## Learn More
 
-Read the [API Reference](./index.md) to learn about Helpfully modules.
+Read the [API Reference][] to learn about Helpfully modules.
 
-Read the [Installation](../installation.md) instructions to learn how to make
-Helpfully available within your projects.
+Read the [Installation][] instructions to learn how to make Resourceful
+available within your projects.
+
+[API Reference]: ./index.md "API Reference"
+
+[Installation]: ../installation.md "Installation"

@@ -37,9 +37,9 @@ table assign(table table1, [table... tables])
   <th>Name</th><th>Type</th><th>Synopsis</th></tr>
 </thead>
 <tbody>
-<tr><td>table1</td><td>table</td>
+<tr><td>table1</td><td><code>table</code></td>
 <td>The <code>table</code> to modify and return.</td></tr>
-<tr><td>tables</td><td>[table...]</td>
+<tr><td>tables</td><td><code>table...</code> (optional)</td>
 <td>Zero or more <code>table</code> values from which to copy non-array
 properties into <code>table1</code>.</td></tr>
 </tbody>
@@ -53,7 +53,7 @@ properties into <code>table1</code>.</td></tr>
   <th>Type(s)</th><th>Synopsis</th></tr>
 </thead>
 <tbody>
-<tr><td>table</td>
+<tr><td><code>table</code></td>
 <td><code>table1</code></td></tr>
 </tbody>
 </table>
@@ -64,7 +64,7 @@ properties into <code>table1</code>.</td></tr>
 
 ##### Errors
 
-`assign` throws an error if `table1` is missing or is not a `table`.
+`assign` will throw an error if `table1` is missing or is not a `table`.
 
 ##### Caveats
 
@@ -107,9 +107,9 @@ table augment(table table1, [table... tables])
   <th>Name</th><th>Type</th><th>Synopsis</th></tr>
 </thead>
 <tbody>
-<tr><td>table1</td><td>table</td>
+<tr><td>table1</td><td><code>table</code></td>
 <td>The <code>table</code> to modify and return.</td></tr>
-<tr><td>tables</td><td>[table...]</td>
+<tr><td>tables</td><td><code>table...</code> (optional)</td>
 <td>Zero or more <code>table</code> values from which to copy non-array
 properties into <code>table1</code>, for properties that don't yet exist
 within <code>table1</code>.</td></tr>
@@ -124,7 +124,7 @@ within <code>table1</code>.</td></tr>
   <th>Type(s)</th><th>Synopsis</th></tr>
 </thead>
 <tbody>
-<tr><td>table</td>
+<tr><td><code>table</code></td>
 <td><code>table1</code></td></tr>
 </tbody>
 </table>
@@ -135,7 +135,7 @@ within <code>table1</code>.</td></tr>
 
 ##### Errors
 
-`augment` throws an error if `table1` is missing or is not a `table`.
+`augment` will throw an error if `table1` is missing or is not a `table`.
 
 ##### Caveats
 
@@ -160,7 +160,11 @@ local t2 = augment(t1) -- t2 == t1
 
 ## Learn More
 
-Read the [API Reference](./index.md) to learn about Helpfully modules.
+Read the [API Reference][] to learn about Helpfully modules.
 
-Read the [Installation](../installation.md) instructions to learn how to make
-Helpfully available within your projects.
+Read the [Installation][] instructions to learn how to make Resourceful
+available within your projects.
+
+[API Reference]: ./index.md "API Reference"
+
+[Installation]: ../installation.md "Installation"

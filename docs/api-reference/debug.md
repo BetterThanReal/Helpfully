@@ -35,7 +35,7 @@ string getRefLabel(string ref)
   <th>Name</th><th>Type</th><th>Synopsis</th></tr>
 </thead>
 <tbody>
-<tr><td>ref</td><td>[string]</td>
+<tr><td>ref</td><td><code>string</code> (optional)</td>
 <td>The data for which a human-readable string label should be
 returned.</td></tr>
 </tbody>
@@ -49,7 +49,7 @@ returned.</td></tr>
   <th>Type(s)</th><th>Synopsis</th></tr>
 </thead>
 <tbody>
-<tr><td>string</td>
+<tr><td><code>string</code></td>
 <td>The human-readable string label for <code>ref</code>.</td></tr>
 </tbody>
 </table>
@@ -109,7 +109,7 @@ string trimErrMsgLineNum([string message])
   <th>Name</th><th>Type</th><th>Synopsis</th></tr>
 </thead>
 <tbody>
-<tr><td>message</td><td>[string]</td>
+<tr><td>message</td><td><code>string</code> (optional)</td>
 <td><p>The error message for which the prefix containing the error source and
 line number should be removed.</p>
 <p>If a non-<code>string</code> value, it will be returned without
@@ -125,7 +125,7 @@ modification.</p></td></tr>
   <th>Type(s)</th><th>Synopsis</th></tr>
 </thead>
 <tbody>
-<tr><td>string</td>
+<tr><td><code>string</code></td>
 <td>A version of <code>message</code> without a prefix containing the error
 source and line number.</td></tr>
 </tbody>
@@ -166,7 +166,11 @@ print(trimErrMsgLineNum(5)) -- 5
 
 ## Learn More
 
-Read the [API Reference](./index.md) to learn about Helpfully modules.
+Read the [API Reference][] to learn about Helpfully modules.
 
-Read the [Installation](../installation.md) instructions to learn how to make
-Helpfully available within your projects.
+Read the [Installation][] instructions to learn how to make Resourceful
+available within your projects.
+
+[API Reference]: ./index.md "API Reference"
+
+[Installation]: ../installation.md "Installation"
